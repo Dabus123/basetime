@@ -1,0 +1,197 @@
+'use client';
+
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
+import { CalendarIcon, ListBulletIcon } from '@heroicons/react/24/outline';
+import { Event } from '@/types';
+import { EventCard } from './EventCard';
+import { CalendarView } from './CalendarView';
+
+interface EventFeedProps {
+  events: Event[];
+  onRSVP: (eventId: number) => void;
+  onShare: (event: Event) => void;
+  userRSVPs: Set<number>;
+  isLoading?: boolean;
+  onCreateEvent?: (date: Date) => void;
+}
+
+type ViewMode = 'list' | 'calendar';
+
+export function EventFeed({
+  events,
+  onRSVP,
+  onShare,
+  userRSVPs,
+  isLoading = false,
+  onCreateEvent,
+}: EventFeedProps) {
+  const [viewMode, setViewMode] = useState<ViewMode>('list');
+  const [filter, setFilter] = useState<'all' | 'upcoming' | 'live' | 'ended'>('all');
+
+  const filteredEvents = events.filter(event => {
+    const now = Math.floor(Date.now() / 1000);
+    const isLive = event.startTime <= now && event.endTime >= now;
+    const isUpcoming = event.startTime > now;
+    const isEnded = event.endTime < now;
+
+    switch (filter) {
+      case 'live':
+        return isLive;
+      case 'upcoming':
+        return isUpcoming;
+      case 'ended':
+        return isEnded;
+      default:
+        return true;
+    }
+  });
+
+  const sortedEvents = [...filteredEvents].sort((a, b) => {
+    // Live events first, then upcoming, then ended
+    const now = Math.floor(Date.now() / 1000);
+    const aLive = a.startTime <= now && a.endTime >= now;
+    const bLive = b.startTime <= now && b.endTime >= now;
+    const aUpcoming = a.startTime > now;
+    const bUpcoming = b.startTime > now;
+
+    if (aLive && !bLive) return -1;
+    if (!aLive && bLive) return 1;
+    if (aUpcoming && !bUpcoming) return -1;
+    if (!aUpcoming && bUpcoming) return 1;
+    
+    return a.startTime - b.startTime;
+  });
+
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        {[...Array(3)].map((_, i) => (
+          <div key={i} className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 animate-pulse">
+            <div className="h-48 bg-gray-200 rounded-lg mb-4"></div>
+            <div className="h-4 bg-gray-200 rounded mb-2"></div>
+            <div className="h-3 bg-gray-200 rounded w-3/4 mb-4"></div>
+            <div className="flex gap-2">
+              <div className="h-8 bg-gray-200 rounded flex-1"></div>
+              <div className="h-8 bg-gray-200 rounded w-20"></div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header Controls */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">Events</h2>
+          <p className="text-gray-600">{sortedEvents.length} events found</p>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {/* Filter Buttons */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.4 }}
+            className="flex bg-gray-100 rounded-lg p-1"
+          >
+            {[
+              { key: 'all', label: 'All' },
+              { key: 'upcoming', label: 'Upcoming' },
+              { key: 'live', label: 'Live' },
+              { key: 'ended', label: 'Ended' },
+            ].map(({ key, label }) => (
+              <motion.button
+                key={key}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setFilter(key as 'all' | 'upcoming' | 'live' | 'ended')}
+                className={`px-3 py-1 text-sm font-medium rounded-md transition-all duration-200 ${
+                  filter === key
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                {label}
+              </motion.button>
+            ))}
+          </motion.div>
+
+          {/* View Mode Toggle */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.4 }}
+            className="flex bg-gray-100 rounded-lg p-1"
+          >
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={() => setViewMode('list')}
+              className={`p-2 rounded-md transition-all duration-200 ${
+                viewMode === 'list'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              <ListBulletIcon className="w-4 h-4" />
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={() => setViewMode('calendar')}
+              className={`p-2 rounded-md transition-all duration-200 ${
+                viewMode === 'calendar'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              <CalendarIcon className="w-4 h-4" />
+            </motion.button>
+          </motion.div>
+        </div>
+      </div>
+
+      {/* Events Content */}
+      {sortedEvents.length === 0 ? (
+        <div className="text-center py-12">
+          <CalendarIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-900 mb-2">No events found</h3>
+          <p className="text-gray-600">
+            {filter === 'all' 
+              ? 'No events have been created yet.' 
+              : `No ${filter} events found.`}
+          </p>
+        </div>
+      ) : (
+        <>
+          {viewMode === 'list' ? (
+            <div className="space-y-4">
+              {sortedEvents.map((event) => (
+                <EventCard
+                  key={event.id}
+                  event={event}
+                  onRSVP={onRSVP}
+                  onShare={onShare}
+                  hasRSVPed={userRSVPs.has(event.id)}
+                />
+              ))}
+            </div>
+          ) : (
+            <CalendarView
+              events={sortedEvents}
+              onRSVP={onRSVP}
+              onShare={onShare}
+              userRSVPs={userRSVPs}
+              isLoading={isLoading}
+              onCreateEvent={onCreateEvent}
+            />
+          )}
+        </>
+      )}
+    </div>
+  );
+}
