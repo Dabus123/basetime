@@ -84,12 +84,12 @@ export default function HomePage() {
         className="bg-white shadow-sm border-b border-gray-200"
       >
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-14 sm:h-16">
+          <div className="flex items-center justify-between h-18 sm:h-18">
             <div className="flex items-center">
               <img 
                 src="/splash.png" 
                 alt="BaseTime" 
-                className="w-6 h-6 sm:w-8 sm:h-8 mr-2 sm:mr-3 rounded-lg"
+                className="w-10 h-10 sm:w-12 sm:h-12 mr-2 sm:mr-3 rounded-lg"
               />
               <h1 className="text-xl sm:text-2xl font-bold text-gray-900">BaseTime</h1>
             </div>

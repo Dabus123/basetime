@@ -24,6 +24,9 @@ interface CalendarDay {
 }
 
 export function CalendarView({ events, onRSVP, onShare, userRSVPs, isLoading, onCreateEvent }: CalendarViewProps) {
+  console.log('🎯 CalendarView component is rendering!');
+  console.log('DEBUG: CalendarView is being called');
+  console.error('ERROR TEST: This should definitely show up');
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -40,6 +43,8 @@ export function CalendarView({ events, onRSVP, onShare, userRSVPs, isLoading, on
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
     
+    console.log('🗓️ Calendar calculating for:', monthNames[month], year, 'Month index:', month);
+    
     const firstDayOfMonth = new Date(year, month, 1);
     const lastDayOfMonth = new Date(year, month + 1, 0);
     const firstDayOfWeek = firstDayOfMonth.getDay();
@@ -47,12 +52,10 @@ export function CalendarView({ events, onRSVP, onShare, userRSVPs, isLoading, on
     
     const days: CalendarDay[] = [];
     
-    // Previous month's trailing days
-    const prevMonth = new Date(year, month - 1, 0);
-    for (let i = firstDayOfWeek - 1; i >= 0; i--) {
-      const date = new Date(year, month - 1, prevMonth.getDate() - i);
+    // Add empty cells for days before the first day of the month
+    for (let i = 0; i < firstDayOfWeek; i++) {
       days.push({
-        date,
+        date: new Date(year, month, 0), // This will be ignored in rendering
         isCurrentMonth: false,
         isToday: false,
         events: [],
@@ -78,18 +81,20 @@ export function CalendarView({ events, onRSVP, onShare, userRSVPs, isLoading, on
       });
     }
     
-    // Next month's leading days
-    const remainingDays = 42 - days.length; // 6 weeks * 7 days
-    for (let day = 1; day <= remainingDays; day++) {
-      const date = new Date(year, month + 1, day);
+    // Fill remaining cells to complete the grid (but don't show next month's dates)
+    const totalCells = Math.ceil(days.length / 7) * 7; // Round up to complete weeks
+    while (days.length < totalCells) {
       days.push({
-        date,
+        date: new Date(year, month + 1, 0), // This will be ignored in rendering
         isCurrentMonth: false,
         isToday: false,
         events: [],
       });
     }
     
+    console.log('Total days calculated:', days.length, 'Current month days:', daysInMonth);
+    console.log('First few days:', days.slice(0, 7).map(d => d.isCurrentMonth ? `${d.date.getDate()}/${d.date.getMonth() + 1}` : 'empty'));
+    console.log('Last few days:', days.slice(-7).map(d => d.isCurrentMonth ? `${d.date.getDate()}/${d.date.getMonth() + 1}` : 'empty'));
     return days;
   }, [currentDate, events]);
 
@@ -101,6 +106,7 @@ export function CalendarView({ events, onRSVP, onShare, userRSVPs, isLoading, on
       } else {
         newDate.setMonth(prev.getMonth() + 1);
       }
+      console.log('🔄 Navigating to:', monthNames[newDate.getMonth()], newDate.getFullYear(), 'Month index:', newDate.getMonth());
       return newDate;
     });
   };
@@ -188,12 +194,12 @@ export function CalendarView({ events, onRSVP, onShare, userRSVPs, isLoading, on
         {calendarDays.map((day, index) => (
           <motion.div
             key={index}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => handleDayClick(day)}
+            whileHover={{ scale: day.isCurrentMonth ? 1.02 : 1 }}
+            whileTap={{ scale: day.isCurrentMonth ? 0.98 : 1 }}
+            onClick={() => day.isCurrentMonth ? handleDayClick(day) : undefined}
             className={`
-              min-h-[80px] sm:min-h-[100px] md:min-h-[120px] lg:min-h-[140px] p-2 sm:p-3 border-r border-b border-gray-100 cursor-pointer relative
-              ${day.isCurrentMonth ? 'bg-white hover:bg-blue-50/30' : 'bg-gray-50/50 hover:bg-gray-100/50'}
+              min-h-[80px] sm:min-h-[100px] md:min-h-[120px] lg:min-h-[140px] p-2 sm:p-3 border-r border-b border-gray-100 relative
+              ${day.isCurrentMonth ? 'bg-white hover:bg-blue-50/30 cursor-pointer' : 'bg-gray-50/30'}
               ${day.isToday ? 'bg-gradient-to-br from-blue-50 to-indigo-50 ring-2 ring-blue-200' : ''}
               transition-all duration-200 group
             `}
@@ -202,10 +208,12 @@ export function CalendarView({ events, onRSVP, onShare, userRSVPs, isLoading, on
               {/* Date Number */}
               <div className={`
                 text-xs sm:text-sm font-semibold mb-1 sm:mb-2 flex items-center justify-between
-                ${day.isCurrentMonth ? 'text-gray-900' : 'text-gray-400'}
+                ${day.isCurrentMonth ? 'text-gray-900' : 'text-transparent'}
                 ${day.isToday ? 'text-blue-600 font-bold' : ''}
               `}>
-                <span className="text-sm sm:text-base md:text-lg">{day.date.getDate()}</span>
+                <span className="text-sm sm:text-base md:text-lg">
+                  {day.isCurrentMonth ? day.date.getDate() : ''}
+                </span>
                 {day.isCurrentMonth && (
                   <motion.div
                     initial={{ opacity: 0, scale: 0 }}
@@ -219,7 +227,7 @@ export function CalendarView({ events, onRSVP, onShare, userRSVPs, isLoading, on
 
               {/* Events */}
               <div className="flex-1 space-y-1 sm:space-y-1.5">
-                {day.events.slice(0, 2).map((event) => (
+                {day.isCurrentMonth && day.events.slice(0, 2).map((event) => (
                   <motion.div
                     key={event.id}
                     whileHover={{ scale: 1.02 }}
@@ -236,7 +244,7 @@ export function CalendarView({ events, onRSVP, onShare, userRSVPs, isLoading, on
                     </span>
                   </motion.div>
                 ))}
-                {day.events.length > 2 && (
+                {day.isCurrentMonth && day.events.length > 2 && (
                   <div className="text-xs text-gray-500 text-center py-1 px-1 sm:px-2 bg-gray-100 rounded-md">
                     +{day.events.length - 2} more
                   </div>

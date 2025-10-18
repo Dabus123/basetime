@@ -26,8 +26,10 @@ export function EventFeed({
   isLoading = false,
   onCreateEvent,
 }: EventFeedProps) {
-  const [viewMode, setViewMode] = useState<ViewMode>('list');
+  const [viewMode, setViewMode] = useState<ViewMode>('calendar');
   const [filter, setFilter] = useState<'all' | 'upcoming' | 'live' | 'ended'>('all');
+  
+  console.log('📋 EventFeed rendering with viewMode:', viewMode);
 
   const filteredEvents = events.filter(event => {
     const now = Math.floor(Date.now() / 1000);
@@ -181,14 +183,17 @@ export function EventFeed({
               ))}
             </div>
           ) : (
-            <CalendarView
-              events={sortedEvents}
-              onRSVP={onRSVP}
-              onShare={onShare}
-              userRSVPs={userRSVPs}
-              isLoading={isLoading}
-              onCreateEvent={onCreateEvent}
-            />
+            <>
+              {console.log('🔄 EventFeed: Rendering CalendarView, viewMode:', viewMode)}
+              <CalendarView
+                events={sortedEvents}
+                onRSVP={onRSVP}
+                onShare={onShare}
+                userRSVPs={userRSVPs}
+                isLoading={isLoading}
+                onCreateEvent={onCreateEvent}
+              />
+            </>
           )}
         </>
       )}
