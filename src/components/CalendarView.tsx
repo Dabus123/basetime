@@ -154,8 +154,8 @@ export function CalendarView({ events, onRSVP, onShare, userRSVPs, isLoading, on
             </span>
           </div>
           <div>
-            <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900">
-              {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
+            <h2 className="text-lg sm:text-xl md:text-2xl text-gray-900">
+              <span className="font-bold">{new Date().getDate()}</span> <span className="font-bold">{monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}</span>
             </h2>
             <p className="text-xs sm:text-sm text-gray-600 hidden sm:block">Plan your events with precision</p>
           </div>

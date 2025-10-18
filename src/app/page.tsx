@@ -116,11 +116,11 @@ export default function HomePage() {
           className="text-center mb-12"
         >
           <h2 className="text-4xl font-bold text-gray-900 mb-4">
-            Your Onchain Event Hub
+            Base App Event Manager
           </h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-4">
-            Discover, create, and share events in the Base ecosystem. 
-            RSVP to events and mint Event Pass NFTs as proof of attendance.
+          Manage and discover events, meetings, and posts.
+          
           </p>
           {events.length > 0 && events[0]?.name === "Base Hackathon 2024" && (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 max-w-md mx-auto">

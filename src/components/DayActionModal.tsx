@@ -126,7 +126,7 @@ export function DayActionModal({
                       Schedule TBA Post
                     </div>
                     <div className="text-sm text-gray-600 group-hover:text-gray-700 transition-colors">
-                      Create a placeholder for future details
+                      Coming soon to BaseTime.
                     </div>
                   </div>
                   <motion.div
