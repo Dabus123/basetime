@@ -4,9 +4,6 @@
     "payload": "",
     "signature": ""
   },
-  "baseBuilder": {
-    "ownerAdresses": "0xEeB37AB8979F5538dB08AFf469017727435D5482"
-  },
   "miniapp": {
     "version": "1",
     "name": "BaseTime",
@@ -30,5 +27,8 @@
     "ogDescription": "Discover, create, and share events in the Base ecosystem. RSVP to events and mint Event Pass NFTs as proof of attendance.",
     "ogImageUrl": "https://basetime.vercel.app/og-image.png",
     "noindex": true
+  },
+  "baseBuilder": {
+    "allowedAddresses": ["0xEeB37AB8979F5538dB08AFf469017727435D5482"]
   }
 }
