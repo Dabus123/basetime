@@ -1,35 +1,34 @@
 {
-  "frame": {
+  "accountAssociation": {
+    "header": "",
+    "payload": "",
+    "signature": ""
+  },
+  "baseBuilder": {
+    "allowedAddresses": []
+  },
+  "miniapp": {
     "version": "1",
     "name": "BaseTime",
-    "subtitle": "Onchain Social Calendar",
-    "description": "BaseTime is a social onchain calendar that lets users view, create, and share events in the Base ecosystem. RSVP to events and mint Event Pass NFTs as proof of attendance.",
-    "iconUrl": "https://basetime.app/icon.png",
     "homeUrl": "https://basetime.app",
+    "iconUrl": "https://basetime.app/icon.png",
     "splashImageUrl": "https://basetime.app/splash.png",
-    "splashBackgroundColor": "#000000",
-    "heroImageUrl": "https://basetime.app/hero.png",
-    "tagline": "Your Onchain Event Hub",
+    "splashBackgroundColor": "#1e40af",
+    "webhookUrl": "https://basetime.app/api/webhook",
+    "subtitle": "Onchain Social Calendar",
+    "description": "Discover, create, and share events in the Base ecosystem. RSVP to events and mint Event Pass NFTs as proof of attendance.",
     "screenshotUrls": [
       "https://basetime.app/screenshot1.png",
       "https://basetime.app/screenshot2.png",
       "https://basetime.app/screenshot3.png"
     ],
     "primaryCategory": "productivity",
-    "tags": ["calendar", "events", "onchain", "social", "base", "nft"],
-    "webhookUrl": "https://basetime.app/api/webhook",
+    "tags": ["calendar", "events", "onchain", "social", "base"],
+    "heroImageUrl": "https://basetime.app/hero.png",
+    "tagline": "Your Onchain Event Hub",
+    "ogTitle": "BaseTime - Onchain Social Calendar",
+    "ogDescription": "Discover, create, and share events in the Base ecosystem. RSVP to events and mint Event Pass NFTs as proof of attendance.",
+    "ogImageUrl": "https://basetime.app/og-image.png",
     "noindex": true
-  },
-  "base_app": {
-    "discovery": {
-      "keywords": ["calendar", "events", "social", "onchain", "base", "nft", "rsvp"],
-      "og_image": "https://basetime.app/og-image.png",
-      "og_title": "BaseTime - Onchain Social Calendar",
-      "og_description": "Discover, create, and share events in the Base ecosystem. RSVP to events and mint Event Pass NFTs as proof of attendance.",
-      "twitter_card": "summary_large_image",
-      "twitter_title": "BaseTime - Onchain Social Calendar",
-      "twitter_description": "Discover, create, and share events in the Base ecosystem. RSVP to events and mint Event Pass NFTs as proof of attendance.",
-      "twitter_image": "https://basetime.app/twitter-image.png"
-    }
   }
 }
