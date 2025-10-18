@@ -55,7 +55,7 @@ export function DayActionModal({
                     <SparklesIcon className="w-6 h-6" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold">Plan Your Day</h2>
+                    <h2 className="text-xl font-bold font-display">Plan Your Day</h2>
                     <p className="text-blue-100 text-sm">
                       {formatDate(selectedDate)}
                     </p>

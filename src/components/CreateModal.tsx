@@ -137,7 +137,7 @@ export function CreateModal({ isOpen, onClose, onSubmit, isLoading = false, sele
           >
             {/* Header */}
             <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <h2 className="text-xl font-semibold text-gray-900">Create Event</h2>
+              <h2 className="text-xl font-semibold text-gray-900 font-display">Create Event</h2>
               <button
                 onClick={handleClose}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"

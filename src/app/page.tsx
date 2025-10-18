@@ -91,7 +91,7 @@ export default function HomePage() {
                 alt="BaseTime" 
                 className="w-10 h-10 sm:w-12 sm:h-12 mr-2 sm:mr-3 rounded-lg"
               />
-              <h1 className="text-xl sm:text-2xl font-bold text-gray-900">BaseTime</h1>
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900 font-display">BaseTime</h1>
             </div>
             
             <div className="flex items-center gap-2 sm:gap-4">
