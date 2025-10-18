@@ -5,7 +5,7 @@
     "signature": ""
   },
   "baseBuilder": {
-    "allowedAddresses": []
+    "ownerAdresses": "0xEeB37AB8979F5538dB08AFf469017727435D5482"
   },
   "miniapp": {
     "version": "1",
