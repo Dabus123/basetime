@@ -35,6 +35,22 @@ export const metadata: Metadata = {
     index: false, // Set to true when ready for production
     follow: false,
   },
+  other: {
+    "fc:miniapp": JSON.stringify({
+      version: "next",
+      imageUrl: "https://basetime.vercel.app/hero.png",
+      button: {
+        title: "Join BaseTime",
+        action: {
+          type: "launch_frame",
+          name: "Launch BaseTime",
+          url: "https://basetime.vercel.app",
+          splashImageUrl: "https://basetime.vercel.app/splash.png",
+          splashBackgroundColor: "#1e40af",
+        },
+      },
+    }),
+  },
 };
 
 export const viewport: Viewport = {
