@@ -1,9 +1,10 @@
 {
-  "accountAssociation": {
-    "header": "",
-    "payload": "",
-    "signature": ""
-  },
+    "accountAssociation": {
+      "header": "eyJmaWQiOjYyODE2NywidHlwZSI6ImN1c3RvZHkiLCJrZXkiOiIweDc1N0YxNTA4NzZBMTlkODc4MjQyNDE2YzE4MDQwMjBGQjJEQzE2REIifQ",
+      "payload": "eyJkb21haW4iOiJiYXNldGltZS52ZXJjZWwuYXBwIn0",
+      "signature": "IMcEPJ0uaZ/GdYVqN54QKP/wsOaJz3NY1fu4QUtBNe0H2NJDsYqVOlWfgq9PgA/vpSlV1nceavqJ5Z6nc68wUhs="
+    }
+  ,
   "miniapp": {
     "version": "1",
     "name": "BaseTime",
