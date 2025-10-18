@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import { ChevronLeftIcon, ChevronRightIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { Event } from '@/types';
 import { EventModal } from './EventModal';
 import { DayActionModal } from './DayActionModal';
@@ -105,19 +105,15 @@ export function CalendarView({ events, onRSVP, onShare, userRSVPs, isLoading, on
     });
   };
 
-  const handleEventClick = (event: Event) => {
+  const handleEventClick = (event: Event, e: React.MouseEvent) => {
+    e.stopPropagation();
     setSelectedEvent(event);
   };
 
   const handleDayClick = (day: CalendarDay) => {
-    if (day.events.length > 0) {
-      // If day has events, show the first event
-      setSelectedEvent(day.events[0]);
-    } else {
-      // If day has no events, show day action modal
-      setSelectedDate(day.date);
-      setIsDayActionModalOpen(true);
-    }
+    // Always show day action modal when clicking a day
+    setSelectedDate(day.date);
+    setIsDayActionModalOpen(true);
   };
 
   const handleCreateEvent = () => {
@@ -142,43 +138,53 @@ export function CalendarView({ events, onRSVP, onShare, userRSVPs, isLoading, on
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+    <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
       {/* Calendar Header */}
-      <div className="flex items-center justify-between p-6 border-b border-gray-200">
-        <h2 className="text-2xl font-bold text-gray-900">
-          {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
-        </h2>
-        <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between p-4 sm:p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-100">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
+            <span className="text-white font-bold text-sm sm:text-lg">
+              {monthNames[currentDate.getMonth()].charAt(0)}
+            </span>
+          </div>
+          <div>
+            <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900">
+              {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
+            </h2>
+            <p className="text-xs sm:text-sm text-gray-600 hidden sm:block">Plan your events with precision</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-1 sm:gap-2">
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => navigateMonth('prev')}
-            className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+            className="p-2 sm:p-3 rounded-xl bg-white hover:bg-gray-50 transition-all duration-200 shadow-sm border border-gray-200"
           >
-            <ChevronLeftIcon className="w-5 h-5 text-gray-600" />
+            <ChevronLeftIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
           </motion.button>
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => navigateMonth('next')}
-            className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+            className="p-2 sm:p-3 rounded-xl bg-white hover:bg-gray-50 transition-all duration-200 shadow-sm border border-gray-200"
           >
-            <ChevronRightIcon className="w-5 h-5 text-gray-600" />
+            <ChevronRightIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
           </motion.button>
         </div>
       </div>
 
       {/* Day Names Header */}
-      <div className="grid grid-cols-7 border-b border-gray-200">
+      <div className="grid grid-cols-7 bg-gray-50/50">
         {dayNames.map(day => (
-          <div key={day} className="p-3 text-center text-sm font-medium text-gray-500 bg-gray-50">
+          <div key={day} className="p-2 sm:p-3 md:p-4 text-center text-xs sm:text-sm font-semibold text-gray-600 uppercase tracking-wide">
             {day}
           </div>
         ))}
       </div>
 
       {/* Calendar Grid */}
-      <div className="grid grid-cols-7">
+      <div className="grid grid-cols-7 bg-white">
         {calendarDays.map((day, index) => (
           <motion.div
             key={index}
@@ -186,51 +192,53 @@ export function CalendarView({ events, onRSVP, onShare, userRSVPs, isLoading, on
             whileTap={{ scale: 0.98 }}
             onClick={() => handleDayClick(day)}
             className={`
-              min-h-[120px] p-2 border-r border-b border-gray-200 cursor-pointer
-              ${day.isCurrentMonth ? 'bg-white' : 'bg-gray-50'}
-              ${day.isToday ? 'bg-blue-50' : ''}
-              hover:bg-blue-50 transition-colors
+              min-h-[80px] sm:min-h-[100px] md:min-h-[120px] lg:min-h-[140px] p-2 sm:p-3 border-r border-b border-gray-100 cursor-pointer relative
+              ${day.isCurrentMonth ? 'bg-white hover:bg-blue-50/30' : 'bg-gray-50/50 hover:bg-gray-100/50'}
+              ${day.isToday ? 'bg-gradient-to-br from-blue-50 to-indigo-50 ring-2 ring-blue-200' : ''}
+              transition-all duration-200 group
             `}
           >
             <div className="flex flex-col h-full">
               {/* Date Number */}
               <div className={`
-                text-sm font-medium mb-1 flex items-center justify-between
+                text-xs sm:text-sm font-semibold mb-1 sm:mb-2 flex items-center justify-between
                 ${day.isCurrentMonth ? 'text-gray-900' : 'text-gray-400'}
                 ${day.isToday ? 'text-blue-600 font-bold' : ''}
               `}>
-                <span>{day.date.getDate()}</span>
-                {day.events.length === 0 && day.isCurrentMonth && (
+                <span className="text-sm sm:text-base md:text-lg">{day.date.getDate()}</span>
+                {day.isCurrentMonth && (
                   <motion.div
                     initial={{ opacity: 0, scale: 0 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="w-1 h-1 bg-blue-400 rounded-full"
-                  />
+                    className="opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                  >
+                    <PlusIcon className="w-4 h-4 text-gray-400 hover:text-blue-500" />
+                  </motion.div>
                 )}
               </div>
 
               {/* Events */}
-              <div className="flex-1 space-y-1">
-                {day.events.slice(0, 3).map((event) => (
+              <div className="flex-1 space-y-1 sm:space-y-1.5">
+                {day.events.slice(0, 2).map((event) => (
                   <motion.div
                     key={event.id}
-                    whileHover={{ scale: 1.05 }}
-                    onClick={() => handleEventClick(event)}
-                    className="flex items-center gap-1 p-1 rounded bg-blue-100 hover:bg-blue-200 transition-colors cursor-pointer"
+                    whileHover={{ scale: 1.02 }}
+                    onClick={(e) => handleEventClick(event, e)}
+                    className="flex items-center gap-1 sm:gap-2 p-1 sm:p-2 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 transition-all duration-200 cursor-pointer border border-blue-100 hover:border-blue-200"
                   >
                     <img
                       src={event.image}
                       alt={event.name}
-                      className="w-4 h-4 rounded object-cover flex-shrink-0"
+                      className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 rounded-md object-cover flex-shrink-0 shadow-sm"
                     />
                     <span className="text-xs text-blue-800 font-medium truncate">
                       {event.name}
                     </span>
                   </motion.div>
                 ))}
-                {day.events.length > 3 && (
-                  <div className="text-xs text-gray-500 text-center">
-                    +{day.events.length - 3} more
+                {day.events.length > 2 && (
+                  <div className="text-xs text-gray-500 text-center py-1 px-1 sm:px-2 bg-gray-100 rounded-md">
+                    +{day.events.length - 2} more
                   </div>
                 )}
               </div>

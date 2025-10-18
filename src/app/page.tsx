@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { CalendarIcon } from '@heroicons/react/24/outline';
 import { ConnectButton } from '@/components/ConnectButton';
 import { CreateEventButton } from '@/components/CreateEventButton';
 import { EventFeed } from '@/components/EventFeed';
@@ -87,7 +86,11 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-14 sm:h-16">
             <div className="flex items-center">
-              <CalendarIcon className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600 mr-2 sm:mr-3" />
+              <img 
+                src="/splash.png" 
+                alt="BaseTime" 
+                className="w-6 h-6 sm:w-8 sm:h-8 mr-2 sm:mr-3 rounded-lg"
+              />
               <h1 className="text-xl sm:text-2xl font-bold text-gray-900">BaseTime</h1>
             </div>
             

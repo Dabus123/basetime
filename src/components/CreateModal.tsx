@@ -157,7 +157,7 @@ export function CreateModal({ isOpen, onClose, onSubmit, isLoading = false, sele
                   type="text"
                   value={formData.name}
                   onChange={(e) => handleInputChange('name', e.target.value)}
-                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500 ${
                     errors.name ? 'border-red-300' : 'border-gray-300'
                   }`}
                   placeholder="Enter event name"
@@ -176,7 +176,7 @@ export function CreateModal({ isOpen, onClose, onSubmit, isLoading = false, sele
                   value={formData.description}
                   onChange={(e) => handleInputChange('description', e.target.value)}
                   rows={3}
-                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500 ${
                     errors.description ? 'border-red-300' : 'border-gray-300'
                   }`}
                   placeholder="Describe your event"
@@ -195,7 +195,7 @@ export function CreateModal({ isOpen, onClose, onSubmit, isLoading = false, sele
                   type="datetime-local"
                   value={formData.startTime}
                   onChange={(e) => handleInputChange('startTime', e.target.value)}
-                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 ${
                     errors.startTime ? 'border-red-300' : 'border-gray-300'
                   }`}
                 />
@@ -213,7 +213,7 @@ export function CreateModal({ isOpen, onClose, onSubmit, isLoading = false, sele
                   type="datetime-local"
                   value={formData.endTime}
                   onChange={(e) => handleInputChange('endTime', e.target.value)}
-                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 ${
                     errors.endTime ? 'border-red-300' : 'border-gray-300'
                   }`}
                 />
@@ -231,7 +231,7 @@ export function CreateModal({ isOpen, onClose, onSubmit, isLoading = false, sele
                   type="url"
                   value={formData.image}
                   onChange={(e) => handleInputChange('image', e.target.value)}
-                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500 ${
                     errors.image ? 'border-red-300' : 'border-gray-300'
                   }`}
                   placeholder="https://example.com/image.jpg"
@@ -250,7 +250,7 @@ export function CreateModal({ isOpen, onClose, onSubmit, isLoading = false, sele
                   type="url"
                   value={formData.onchainAction}
                   onChange={(e) => handleInputChange('onchainAction', e.target.value)}
-                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500 ${
                     errors.onchainAction ? 'border-red-300' : 'border-gray-300'
                   }`}
                   placeholder="https://example.com/mint"

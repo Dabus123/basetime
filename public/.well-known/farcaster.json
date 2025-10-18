@@ -11,7 +11,7 @@
     "homeUrl": "https://basetime.vercel.app",
     "iconUrl": "https://basetime.vercel.app/icon.png",
     "splashImageUrl": "https://basetime.vercel.app/splash.png",
-    "splashBackgroundColor": "#1e40af",
+    "splashBackgroundColor": "#ffffff",
     "subtitle": "Onchain Social Calendar",
     "description": "Discover, create, and share events in the Base ecosystem. RSVP to events and mint Event Pass NFTs as proof of attendance.",
     "screenshotUrls": [
