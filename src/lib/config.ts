@@ -5,13 +5,13 @@ export const CONTRACT_ADDRESSES = {
 };
 
 export const NETWORK_CONFIG = {
-  CHAIN_ID: 84532, // Base Sepolia testnet
-  RPC_URL: "https://sepolia.base.org",
-  BLOCK_EXPLORER: "https://sepolia.basescan.org",
+  CHAIN_ID: 8453, // Base mainnet
+  RPC_URL: process.env.NEXT_PUBLIC_RPC_URL || "https://mainnet.base.org",
+  BLOCK_EXPLORER: "https://basescan.org",
 };
 
 export const IPFS_CONFIG = {
-  GATEWAY: "https://ipfs.io/ipfs/",
+  GATEWAY: "basetime.mypinata.cloud",
   PINATA_API_URL: "https://api.pinata.cloud/pinning/pinFileToIPFS",
 };
 

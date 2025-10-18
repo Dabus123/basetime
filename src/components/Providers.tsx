@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { WagmiProvider } from 'wagmi';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { OnchainKitProvider } from '@coinbase/onchainkit';
-import { baseSepolia } from 'wagmi/chains';
+import { base } from 'wagmi/chains';
 import { config } from '@/lib/wagmi-config';
 import { PulseLoader } from './LoadingSpinner';
 import { sdk } from '@farcaster/miniapp-sdk';
@@ -45,7 +45,7 @@ export function Providers({ children }: ProvidersProps) {
       <QueryClientProvider client={queryClient}>
         <OnchainKitProvider
           apiKey={process.env.NEXT_PUBLIC_ONCHAINKIT_API_KEY || ''}
-          chain={baseSepolia}
+          chain={base}
         >
           {children}
         </OnchainKitProvider>

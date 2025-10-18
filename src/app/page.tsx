@@ -15,7 +15,7 @@ export default function HomePage() {
   const { address } = useAccount();
   const { events, isLoading, refreshEvents } = useEvents();
   const { userRSVPs } = useUserRSVPs(address);
-  const { createEvent, rsvpToEvent } = useEventActions();
+  const { createEvent, rsvpToEvent, isPending, isSuccess } = useEventActions();
   
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
@@ -25,15 +25,23 @@ export default function HomePage() {
     setIsCreating(true);
     try {
       await createEvent(eventData);
-      setIsCreateModalOpen(false);
-      setSelectedDate(null);
-      refreshEvents();
+      // Wait for transaction to be confirmed before refreshing
+      // The refreshEvents will be called automatically when isSuccess changes
     } catch (error) {
       console.error('Failed to create event:', error);
     } finally {
       setIsCreating(false);
     }
   };
+
+  // Refresh events when transaction is successful
+  React.useEffect(() => {
+    if (isSuccess) {
+      refreshEvents();
+      setIsCreateModalOpen(false);
+      setSelectedDate(null);
+    }
+  }, [isSuccess, refreshEvents]);
 
   const handleDateSelect = (date: Date) => {
     setSelectedDate(date);
@@ -139,7 +147,7 @@ export default function HomePage() {
           setSelectedDate(null);
         }}
         onSubmit={handleCreateEvent}
-        isLoading={isCreating}
+        isLoading={isCreating || isPending}
         selectedDate={selectedDate}
       />
     </motion.div>

@@ -31,9 +31,26 @@ const EVENT_REGISTRY_ABI = [
   },
   {
     "inputs": [{"name": "_eventId", "type": "uint256"}],
-    "name": "cancelRSVP",
-    "outputs": [],
-    "stateMutability": "nonpayable",
+    "name": "getEvent",
+    "outputs": [
+      {
+        "components": [
+          {"name": "id", "type": "uint256"},
+          {"name": "creator", "type": "address"},
+          {"name": "name", "type": "string"},
+          {"name": "description", "type": "string"},
+          {"name": "startTime", "type": "uint256"},
+          {"name": "endTime", "type": "uint256"},
+          {"name": "image", "type": "string"},
+          {"name": "onchainAction", "type": "string"},
+          {"name": "isActive", "type": "bool"},
+          {"name": "rsvpCount", "type": "uint256"}
+        ],
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -43,13 +60,13 @@ const EVENT_REGISTRY_ABI = [
       {
         "components": [
           {"name": "id", "type": "uint256"},
+          {"name": "creator", "type": "address"},
           {"name": "name", "type": "string"},
           {"name": "description", "type": "string"},
           {"name": "startTime", "type": "uint256"},
           {"name": "endTime", "type": "uint256"},
           {"name": "image", "type": "string"},
           {"name": "onchainAction", "type": "string"},
-          {"name": "creator", "type": "address"},
           {"name": "isActive", "type": "bool"},
           {"name": "rsvpCount", "type": "uint256"}
         ],
@@ -61,16 +78,44 @@ const EVENT_REGISTRY_ABI = [
     "type": "function"
   },
   {
-    "inputs": [{"name": "_eventId", "type": "uint256"}, {"name": "_user", "type": "address"}],
-    "name": "hasRSVPed",
-    "outputs": [{"name": "", "type": "bool"}],
+    "inputs": [{"name": "_user", "type": "address"}],
+    "name": "getUserRSVPs",
+    "outputs": [{"name": "", "type": "uint256[]"}],
     "stateMutability": "view",
     "type": "function"
   },
   {
-    "inputs": [{"name": "_user", "type": "address"}],
-    "name": "getUserRSVPs",
-    "outputs": [{"name": "", "type": "uint256[]"}],
+    "inputs": [{"name": "", "type": "address"}, {"name": "", "type": "uint256"}],
+    "name": "rsvps",
+    "outputs": [{"name": "", "type": "bool"}],
+    "stateMutability": "view",
+    "type": "function"
+  }
+] as const;
+
+// RSVPToken ABI
+const RSVP_TOKEN_ABI = [
+  {
+    "inputs": [
+      {"name": "eventId", "type": "uint256"},
+      {"name": "tokenURI", "type": "string"}
+    ],
+    "name": "mintEventPassForUser",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [{"name": "tokenId", "type": "uint256"}],
+    "name": "tokenURI",
+    "outputs": [{"name": "", "type": "string"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{"name": "owner", "type": "address"}],
+    "name": "balanceOf",
+    "outputs": [{"name": "", "type": "uint256"}],
     "stateMutability": "view",
     "type": "function"
   }
@@ -88,6 +133,8 @@ export function useEvents() {
   });
 
   useEffect(() => {
+    console.log('useEvents: Contract call result:', { activeEvents, contractError });
+    
     // If contract call fails or returns no data, use dummy data
     if (contractError || !activeEvents) {
       console.log('Using dummy data for events');
@@ -98,6 +145,7 @@ export function useEvents() {
     }
 
     if (activeEvents) {
+      console.log('Processing real contract events:', activeEvents);
       const formattedEvents: Event[] = activeEvents.map((event: {
         id: bigint;
         name: string;
@@ -122,6 +170,7 @@ export function useEvents() {
         rsvpCount: Number(event.rsvpCount),
       }));
       
+      console.log('Formatted events:', formattedEvents);
       setEvents(formattedEvents);
       setIsLoading(false);
       setError(null);
@@ -190,6 +239,9 @@ export function useEventActions() {
   }) => {
     if (!address) throw new Error('Wallet not connected');
 
+    console.log('Creating event with data:', eventData);
+    console.log('Contract address:', CONTRACT_ADDRESSES.EVENT_REGISTRY);
+
     // Check if contract is deployed
     if (!CONTRACT_ADDRESSES.EVENT_REGISTRY || CONTRACT_ADDRESSES.EVENT_REGISTRY === '0x0000000000000000000000000000000000000000') {
       throw new Error('Contract not deployed. Please deploy contracts first.');
@@ -197,6 +249,8 @@ export function useEventActions() {
 
     const startTimestamp = Math.floor(new Date(eventData.startTime).getTime() / 1000);
     const endTimestamp = Math.floor(new Date(eventData.endTime).getTime() / 1000);
+
+    console.log('Timestamps:', { startTimestamp, endTimestamp });
 
     await writeContract({
       address: CONTRACT_ADDRESSES.EVENT_REGISTRY as `0x${string}`,
@@ -216,39 +270,39 @@ export function useEventActions() {
   const rsvpToEvent = useCallback(async (eventId: number) => {
     if (!address) throw new Error('Wallet not connected');
 
-    // Check if contract is deployed
+    console.log('RSVPing to event:', eventId);
+    console.log('EventRegistry address:', CONTRACT_ADDRESSES.EVENT_REGISTRY);
+    console.log('RSVPToken address:', CONTRACT_ADDRESSES.RSVP_TOKEN);
+
+    // Check if contracts are deployed
     if (!CONTRACT_ADDRESSES.EVENT_REGISTRY || CONTRACT_ADDRESSES.EVENT_REGISTRY === '0x0000000000000000000000000000000000000000') {
-      throw new Error('Contract not deployed. Please deploy contracts first.');
+      throw new Error('EventRegistry not deployed. Please deploy contracts first.');
+    }
+    if (!CONTRACT_ADDRESSES.RSVP_TOKEN || CONTRACT_ADDRESSES.RSVP_TOKEN === '0x0000000000000000000000000000000000000000') {
+      throw new Error('RSVPToken not deployed. Please deploy contracts first.');
     }
 
+    // First, RSVP to the event (updates RSVP count)
     await writeContract({
       address: CONTRACT_ADDRESSES.EVENT_REGISTRY as `0x${string}`,
       abi: EVENT_REGISTRY_ABI,
       functionName: 'rsvpToEvent',
       args: [BigInt(eventId)],
     });
-  }, [address, writeContract]);
 
-  const cancelRSVP = useCallback(async (eventId: number) => {
-    if (!address) throw new Error('Wallet not connected');
-
-    // Check if contract is deployed
-    if (!CONTRACT_ADDRESSES.EVENT_REGISTRY || CONTRACT_ADDRESSES.EVENT_REGISTRY === '0x0000000000000000000000000000000000000000') {
-      throw new Error('Contract not deployed. Please deploy contracts first.');
-    }
-
+    // Then, mint Event Pass NFT
+    const tokenURI = `https://basetime.vercel.app/api/metadata/event/${eventId}`;
     await writeContract({
-      address: CONTRACT_ADDRESSES.EVENT_REGISTRY as `0x${string}`,
-      abi: EVENT_REGISTRY_ABI,
-      functionName: 'cancelRSVP',
-      args: [BigInt(eventId)],
+      address: CONTRACT_ADDRESSES.RSVP_TOKEN as `0x${string}`,
+      abi: RSVP_TOKEN_ABI,
+      functionName: 'mintEventPassForUser',
+      args: [BigInt(eventId), tokenURI],
     });
   }, [address, writeContract]);
 
   return {
     createEvent,
     rsvpToEvent,
-    cancelRSVP,
     isPending: isPending || isConfirming,
     isSuccess,
     hash,
