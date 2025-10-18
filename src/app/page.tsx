@@ -76,14 +76,14 @@ export default function HomePage() {
         transition={{ delay: 0.1, duration: 0.5 }}
         className="bg-white shadow-sm border-b border-gray-200"
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-14 sm:h-16">
             <div className="flex items-center">
-              <CalendarIcon className="w-8 h-8 text-blue-600 mr-3" />
-              <h1 className="text-2xl font-bold text-gray-900">BaseTime</h1>
+              <CalendarIcon className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600 mr-2 sm:mr-3" />
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900">BaseTime</h1>
             </div>
             
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4">
               <CreateEventButton onCreateEvent={() => setIsCreateModalOpen(true)} />
               <ConnectButton />
             </div>
