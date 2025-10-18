@@ -1,0 +1,14 @@
+<svg width="1284" height="2778" viewBox="0 0 1284 2778" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1284" height="2778" fill="#f3f4f6"/>
+  <rect x="0" y="0" width="1284" height="100" fill="#1e40af"/>
+  <text x="642" y="60" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="32" font-weight="bold">BaseTime</text>
+  <rect x="50" y="150" width="1184" height="500" rx="20" fill="white"/>
+  <rect x="100" y="200" width="1084" height="400" rx="10" fill="#1e40af"/>
+  <text x="642" y="280" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="24" font-weight="bold">Create Event</text>
+  <rect x="150" y="350" width="984" height="50" rx="5" fill="white"/>
+  <rect x="150" y="420" width="984" height="100" rx="5" fill="white"/>
+  <rect x="150" y="540" width="984" height="50" rx="5" fill="white"/>
+  <rect x="150" y="610" width="984" height="50" rx="5" fill="white"/>
+  <rect x="500" y="700" width="284" height="60" rx="30" fill="white"/>
+  <text x="642" y="740" text-anchor="middle" fill="#1e40af" font-family="Arial, sans-serif" font-size="20" font-weight="bold">Create Event</text>
+</svg>

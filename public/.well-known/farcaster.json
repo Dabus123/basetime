@@ -8,24 +8,24 @@
     "version": "1",
     "name": "BaseTime",
     "homeUrl": "https://basetime.vercel.app",
-    "iconUrl": "https://basetime.vercel.app/icon.png",
-    "splashImageUrl": "https://basetime.vercel.app/splash.png",
+    "iconUrl": "https://basetime.vercel.app/icon.svg",
+    "splashImageUrl": "https://basetime.vercel.app/splash.svg",
     "splashBackgroundColor": "#1e40af",
     "webhookUrl": "https://basetime.vercel.app/api/webhook",
     "subtitle": "Onchain Social Calendar",
     "description": "Discover, create, and share events in the Base ecosystem. RSVP to events and mint Event Pass NFTs as proof of attendance.",
     "screenshotUrls": [
-      "https://basetime.vercel.app/screenshot1.png",
-      "https://basetime.vercel.app/screenshot2.png",
-      "https://basetime.vercel.app/screenshot3.png"
+      "https://basetime.vercel.app/screenshot1.svg",
+      "https://basetime.vercel.app/screenshot2.svg",
+      "https://basetime.vercel.app/screenshot3.svg"
     ],
     "primaryCategory": "productivity",
     "tags": ["calendar", "events", "onchain", "social", "base"],
-    "heroImageUrl": "https://basetime.vercel.app/hero.png",
+    "heroImageUrl": "https://basetime.vercel.app/hero.svg",
     "tagline": "Your Onchain Event Hub",
     "ogTitle": "BaseTime - Onchain Social Calendar",
     "ogDescription": "Discover, create, and share events in the Base ecosystem. RSVP to events and mint Event Pass NFTs as proof of attendance.",
-    "ogImageUrl": "https://basetime.vercel.app/og-image.png",
+    "ogImageUrl": "https://basetime.vercel.app/og-image.svg",
     "noindex": true
   },
   "baseBuilder": {

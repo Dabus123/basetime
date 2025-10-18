@@ -38,14 +38,14 @@ export const metadata: Metadata = {
   other: {
     "fc:miniapp": JSON.stringify({
       version: "next",
-      imageUrl: "https://basetime.vercel.app/hero.png",
+      imageUrl: "https://basetime.vercel.app/hero.svg",
       button: {
         title: "Join BaseTime",
         action: {
           type: "launch_frame",
           name: "Launch BaseTime",
           url: "https://basetime.vercel.app",
-          splashImageUrl: "https://basetime.vercel.app/splash.png",
+          splashImageUrl: "https://basetime.vercel.app/splash.svg",
           splashBackgroundColor: "#1e40af",
         },
       },
