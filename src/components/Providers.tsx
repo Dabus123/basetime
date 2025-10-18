@@ -7,6 +7,7 @@ import { OnchainKitProvider } from '@coinbase/onchainkit';
 import { baseSepolia } from 'wagmi/chains';
 import { config } from '@/lib/wagmi-config';
 import { PulseLoader } from './LoadingSpinner';
+import { sdk } from '@farcaster/miniapp-sdk';
 
 const queryClient = new QueryClient();
 
@@ -19,6 +20,13 @@ export function Providers({ children }: ProvidersProps) {
 
   useEffect(() => {
     setMounted(true);
+    
+    // Call sdk.actions.ready() to hide the loading splash screen
+    // This should be called as soon as the app is ready to be displayed
+    sdk.actions.ready().catch((error) => {
+      console.warn('Failed to call sdk.actions.ready():', error);
+      // Don't throw - this is not critical for the app to function
+    });
   }, []);
 
   if (!mounted) {
