@@ -28,6 +28,6 @@
     "noindex": true
   },
   "baseBuilder": {
-   "allowedAddresses": ["0xEeB37AB8979F5538dB08AFf469017727435D5482"]
+   "ownerAddress": "0xEeB37AB8979F5538dB08AFf469017727435D5482"
   }
 }
