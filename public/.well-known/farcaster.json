@@ -22,8 +22,8 @@
     "tags": ["calendar"],
     "heroImageUrl": "https://basetime.vercel.app/hero.png",
     "tagline": "Your Onchain Event Hub",
-    "ogTitle": "BaseTime - Onchain Social Calendar",
-    "ogDescription": "Discover, create, and share events in the Base ecosystem. RSVP to events and mint Event Pass NFTs as proof of attendance.",
+    "ogTitle": "BaseTime",
+    "ogDescription": "Time to get based! RVSP to events and connect with the Base Community.",
     "ogImageUrl": "https://basetime.vercel.app/og-image.png",
     "noindex": true
   },
