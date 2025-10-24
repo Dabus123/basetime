@@ -2,8 +2,6 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ConnectButton } from '@/components/ConnectButton';
-import { CreateEventButton } from '@/components/CreateEventButton';
 import { EventFeed } from '@/components/EventFeed';
 import { CreateModal } from '@/components/CreateModal';
 import { CalendarView } from '@/components/CalendarView';
@@ -81,7 +79,7 @@ export default function HomePage() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="min-h-screen bg-white"
+      className="h-screen bg-white flex flex-col overflow-hidden"
     >
             {/* Mobile Header */}
             <motion.header
@@ -112,7 +110,7 @@ export default function HomePage() {
               initial={{ y: 50, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.2, duration: 0.5 }}
-              className="flex flex-col h-screen"
+              className="flex-1 flex flex-col overflow-hidden"
             >
               {/* Calendar or List View */}
               <div className="flex-1 overflow-hidden">
@@ -122,7 +120,6 @@ export default function HomePage() {
                     onRSVP={handleRSVP}
                     onShare={handleShare}
                     userRSVPs={userRSVPs}
-                    isLoading={isLoading}
                     onCreateEvent={handleDateSelect}
                   />
                 ) : (
@@ -146,7 +143,7 @@ export default function HomePage() {
             initial={{ y: 100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 100, opacity: 0 }}
-            className="bg-green-100 text-green-800 px-4 py-2 text-center text-sm"
+            className="absolute bottom-0 left-0 right-0 bg-green-100 text-green-800 px-4 py-2 text-center text-sm z-30"
           >
             Event Created
           </motion.div>

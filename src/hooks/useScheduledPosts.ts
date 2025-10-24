@@ -20,7 +20,7 @@ export function useScheduledPosts() {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
       try {
-        const posts = JSON.parse(stored).map((post: any) => ({
+        const posts = JSON.parse(stored).map((post: ScheduledPost) => ({
           ...post,
           scheduledFor: new Date(post.scheduledFor),
           createdAt: new Date(post.createdAt),

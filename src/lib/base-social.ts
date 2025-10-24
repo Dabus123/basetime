@@ -76,32 +76,6 @@ export function createCastWithImage(text: string, imageUrl: string): CastData {
 }
 
 /**
- * Prepare transaction data for posting a cast
- */
-export function prepareCastTransaction(
-  fid: bigint,
-  cast: CastData
-): {
-  to: `0x${string}`;
-  data: `0x${string}`;
-} {
-  const { messageType, message, embeds } = encodeCastData(cast);
-  
-  const data = encodeFunctionData({
-    abi: SOCIAL_HUB_ABI,
-    functionName: embeds.length > 0 ? 'publishCastWithEmbeds' : 'publishCast',
-    args: embeds.length > 0 
-      ? [fid, messageType, message, [], embeds]
-      : [fid, messageType, message, []],
-  });
-  
-  return {
-    to: BASE_SOCIAL_HUB,
-    data,
-  };
-}
-
-/**
  * Format post data for Base social feed
  */
 export function formatPostForBaseSocial(

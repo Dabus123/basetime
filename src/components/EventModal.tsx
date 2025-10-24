@@ -17,13 +17,6 @@ interface EventModalProps {
 export function EventModal({ event, onClose, onRSVP, onShare, hasRSVPed }: EventModalProps) {
   const [isVisible, setIsVisible] = useState(false);
   
-  // Don't render if no event is provided
-  if (!event) {
-    return null;
-  }
-  
-  const eventStatus = getEventStatus(event.startTime, event.endTime);
-
   useEffect(() => {
     setIsVisible(true);
     // Prevent body scroll when modal is open
@@ -32,6 +25,13 @@ export function EventModal({ event, onClose, onRSVP, onShare, hasRSVPed }: Event
       document.body.style.overflow = 'unset';
     };
   }, []);
+  
+  // Don't render if no event is provided
+  if (!event) {
+    return null;
+  }
+  
+  const eventStatus = getEventStatus(event.startTime, event.endTime);
 
   const handleRSVP = () => {
     onRSVP(event.id);

@@ -195,7 +195,6 @@ export function EventFeed({
                   onRSVP={onRSVP}
                   onShare={onShare}
                   userRSVPs={userRSVPs}
-                  isLoading={isLoading}
                   onCreateEvent={onCreateEvent}
                 />
               </>

@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeftIcon, ChevronRightIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { motion } from 'framer-motion';
+import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import { Event } from '@/types';
 import { EventModal } from './EventModal';
 import { DayActionModal } from './DayActionModal';
@@ -15,7 +15,6 @@ interface CalendarViewProps {
   onRSVP: (eventId: number) => void;
   onShare: (event: Event) => void;
   userRSVPs: Set<number>;
-  isLoading: boolean;
   onCreateEvent?: (date: Date) => void;
 }
 
@@ -26,7 +25,7 @@ interface CalendarDay {
   events: Event[];
 }
 
-export function CalendarView({ events, onRSVP, onShare, userRSVPs, isLoading, onCreateEvent }: CalendarViewProps) {
+export function CalendarView({ events, onRSVP, onShare, userRSVPs, onCreateEvent }: CalendarViewProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -255,7 +254,7 @@ export function CalendarView({ events, onRSVP, onShare, userRSVPs, isLoading, on
       >
         {/* Calendar Grid */}
       <div 
-        className="bg-white border-b border-gray-200 relative overflow-hidden flex-shrink-0"
+        className="bg-white border-b border-gray-200 relative overflow-hidden flex-shrink-0 h-80"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}

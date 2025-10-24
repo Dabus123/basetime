@@ -81,7 +81,7 @@ export function useBaseSocial(): UseBaseSocialReturn {
           console.log('🔗 Trying embeds with IPFS URL...');
           result = await sdk.actions.composeCast({
             text: `${data.header}\n\n${data.description}`,
-            embeds: [{ url: imageUrl }],
+            embeds: [imageUrl],
             close: false,
           });
           console.log('✅ Embeds with IPFS URL succeeded!');
@@ -134,7 +134,7 @@ export function useBaseSocial(): UseBaseSocialReturn {
       
       // Extract transaction hash if available
       if (result && typeof result === 'object' && 'hash' in result) {
-        setTxHash(result.hash);
+        setTxHash(result.hash as string);
       }
       
       setIsSuccess(true);
