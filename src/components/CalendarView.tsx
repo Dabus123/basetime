@@ -1,11 +1,14 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeftIcon, ChevronRightIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { Event } from '@/types';
 import { EventModal } from './EventModal';
 import { DayActionModal } from './DayActionModal';
+import { TBAPostModal, TBAPostData } from './TBAPostModal';
+import { useScheduledPosts } from '@/hooks/useScheduledPosts';
+import { useBaseSocial } from '@/hooks/useBaseSocial';
 
 interface CalendarViewProps {
   events: Event[];
@@ -24,13 +27,40 @@ interface CalendarDay {
 }
 
 export function CalendarView({ events, onRSVP, onShare, userRSVPs, isLoading, onCreateEvent }: CalendarViewProps) {
-  console.log('🎯 CalendarView component is rendering!');
-  console.log('DEBUG: CalendarView is being called');
-  console.error('ERROR TEST: This should definitely show up');
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isDayActionModalOpen, setIsDayActionModalOpen] = useState(false);
+  const [isTBAModalOpen, setIsTBAModalOpen] = useState(false);
+  
+  // Scheduling hooks
+  const { addScheduledPost, getDuePosts } = useScheduledPosts();
+  const { postToBaseSocial } = useBaseSocial();
+
+  // Check for due posts every minute
+  useEffect(() => {
+    const checkDuePosts = () => {
+      const duePosts = getDuePosts();
+      if (duePosts.length > 0) {
+        const post = duePosts[0]; // Get the first due post
+        const confirmPost = confirm(
+          `📅 It's time to post!\n\n"${post.header}"\n\nPost now?`
+        );
+        
+        if (confirmPost) {
+          postToBaseSocial(post);
+        }
+      }
+    };
+
+    // Check immediately
+    checkDuePosts();
+
+    // Check every minute
+    const interval = setInterval(checkDuePosts, 60000);
+
+    return () => clearInterval(interval);
+  }, [getDuePosts, postToBaseSocial]);
 
   const monthNames = [
     'January', 'February', 'March', 'April', 'May', 'June',
@@ -42,8 +72,6 @@ export function CalendarView({ events, onRSVP, onShare, userRSVPs, isLoading, on
   const calendarDays = useMemo(() => {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
-    
-    console.log('🗓️ Calendar calculating for:', monthNames[month], year, 'Month index:', month);
     
     const firstDayOfMonth = new Date(year, month, 1);
     const lastDayOfMonth = new Date(year, month + 1, 0);
@@ -92,9 +120,6 @@ export function CalendarView({ events, onRSVP, onShare, userRSVPs, isLoading, on
       });
     }
     
-    console.log('Total days calculated:', days.length, 'Current month days:', daysInMonth);
-    console.log('First few days:', days.slice(0, 7).map(d => d.isCurrentMonth ? `${d.date.getDate()}/${d.date.getMonth() + 1}` : 'empty'));
-    console.log('Last few days:', days.slice(-7).map(d => d.isCurrentMonth ? `${d.date.getDate()}/${d.date.getMonth() + 1}` : 'empty'));
     return days;
   }, [currentDate, events]);
 
@@ -106,7 +131,6 @@ export function CalendarView({ events, onRSVP, onShare, userRSVPs, isLoading, on
       } else {
         newDate.setMonth(prev.getMonth() + 1);
       }
-      console.log('🔄 Navigating to:', monthNames[newDate.getMonth()], newDate.getFullYear(), 'Month index:', newDate.getMonth());
       return newDate;
     });
   };
@@ -131,8 +155,20 @@ export function CalendarView({ events, onRSVP, onShare, userRSVPs, isLoading, on
 
   const handleScheduleTBA = () => {
     setIsDayActionModalOpen(false);
-    // TODO: Implement TBA post functionality
-    console.log('Schedule TBA post for:', selectedDate);
+    setIsTBAModalOpen(true);
+  };
+
+  const handleTBASubmit = async (data: TBAPostData) => {
+    console.log('📝 TBA Post Data:', data);
+    console.log('📅 Scheduled for:', selectedDate);
+    
+    // Schedule the post
+    const scheduledPost = addScheduledPost(data, selectedDate!);
+    
+    console.log('📦 Scheduled Post:', scheduledPost);
+    console.log('✅ Post scheduled successfully!');
+    
+    alert(`✅ Post scheduled for ${selectedDate!.toLocaleDateString()}!\n\nYou'll be prompted to post when it's time.`);
   };
 
   if (isLoading) {
@@ -278,6 +314,17 @@ export function CalendarView({ events, onRSVP, onShare, userRSVPs, isLoading, on
         onCreateEvent={handleCreateEvent}
         onScheduleTBA={handleScheduleTBA}
       />
+
+      {/* TBA Post Modal */}
+      {selectedDate && (
+        <TBAPostModal
+          isOpen={isTBAModalOpen}
+          onClose={() => setIsTBAModalOpen(false)}
+          selectedDate={selectedDate}
+          onSubmit={handleTBASubmit}
+          onSchedule={handleTBASubmit}
+        />
+      )}
     </div>
   );
 }

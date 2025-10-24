@@ -28,8 +28,6 @@ export function EventFeed({
 }: EventFeedProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('calendar');
   const [filter, setFilter] = useState<'all' | 'upcoming' | 'live' | 'ended'>('all');
-  
-  console.log('📋 EventFeed rendering with viewMode:', viewMode);
 
   const filteredEvents = events.filter(event => {
     const now = Math.floor(Date.now() / 1000);
@@ -88,8 +86,8 @@ export function EventFeed({
       {/* Header Controls */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Events</h2>
-          <p className="text-gray-600">{sortedEvents.length} events found</p>
+          <h2 className="text-2xl font-bold text-blue-900">Events</h2>
+          <p className="text-blue-700">{sortedEvents.length} events found</p>
         </div>
 
         <div className="flex items-center gap-2">
@@ -98,7 +96,7 @@ export function EventFeed({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.4 }}
-            className="flex bg-gray-100 rounded-lg p-1"
+            className="flex bg-blue-100 rounded-lg p-1"
           >
             {[
               { key: 'all', label: 'All' },
@@ -113,8 +111,8 @@ export function EventFeed({
                 onClick={() => setFilter(key as 'all' | 'upcoming' | 'live' | 'ended')}
                 className={`px-3 py-1 text-sm font-medium rounded-md transition-all duration-200 ${
                   filter === key
-                    ? 'bg-white text-gray-900 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900'
+                    ? 'bg-white text-blue-900 shadow-sm'
+                    : 'text-blue-600 hover:text-blue-900'
                 }`}
               >
                 {label}
@@ -127,7 +125,7 @@ export function EventFeed({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.4 }}
-            className="flex bg-gray-100 rounded-lg p-1"
+            className="flex bg-blue-100 rounded-lg p-1"
           >
             <motion.button
               whileHover={{ scale: 1.1 }}
@@ -135,8 +133,8 @@ export function EventFeed({
               onClick={() => setViewMode('list')}
               className={`p-2 rounded-md transition-all duration-200 ${
                 viewMode === 'list'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-white text-blue-900 shadow-sm'
+                  : 'text-blue-600 hover:text-blue-900'
               }`}
             >
               <ListBulletIcon className="w-4 h-4" />
@@ -147,8 +145,8 @@ export function EventFeed({
               onClick={() => setViewMode('calendar')}
               className={`p-2 rounded-md transition-all duration-200 ${
                 viewMode === 'calendar'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-white text-blue-900 shadow-sm'
+                  : 'text-blue-600 hover:text-blue-900'
               }`}
             >
               <CalendarIcon className="w-4 h-4" />
@@ -160,9 +158,9 @@ export function EventFeed({
       {/* Events Content */}
       {sortedEvents.length === 0 ? (
         <div className="text-center py-12">
-          <CalendarIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No events found</h3>
-          <p className="text-gray-600">
+          <CalendarIcon className="w-16 h-16 text-blue-300 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-blue-900 mb-2">No events found</h3>
+          <p className="text-blue-700">
             {filter === 'all' 
               ? 'No events have been created yet.' 
               : `No ${filter} events found.`}
@@ -184,7 +182,6 @@ export function EventFeed({
             </div>
           ) : (
             <>
-              {console.log('🔄 EventFeed: Rendering CalendarView, viewMode:', viewMode)}
               <CalendarView
                 events={sortedEvents}
                 onRSVP={onRSVP}

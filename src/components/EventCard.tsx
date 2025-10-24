@@ -59,7 +59,7 @@ export function EventCard({
       className={`bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow ${className}`}
     >
       {/* Event Image */}
-      <div className="relative h-48 bg-gradient-to-br from-blue-50 to-purple-50">
+      <div className="relative h-48 bg-gradient-to-br from-blue-50 to-blue-100">
         {event.image ? (
           <img
             src={event.image}
@@ -71,7 +71,7 @@ export function EventCard({
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <CalendarIcon className="w-16 h-16 text-gray-300" />
+            <CalendarIcon className="w-16 h-16 text-blue-300" />
           </div>
         )}
         
@@ -84,23 +84,23 @@ export function EventCard({
       {/* Event Content */}
       <div className="p-4">
         {/* Event Title */}
-        <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2 font-display">
+        <h3 className="text-lg font-semibold text-blue-900 mb-2 line-clamp-2 font-display">
           {event.name}
         </h3>
 
         {/* Event Description */}
-        <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+        <p className="text-blue-700 text-sm mb-3 line-clamp-2">
           {truncateText(event.description, 120)}
         </p>
 
         {/* Event Details */}
         <div className="space-y-2 mb-4">
-          <div className="flex items-center text-sm text-gray-500">
+          <div className="flex items-center text-sm text-blue-600">
             <ClockIcon className="w-4 h-4 mr-2" />
             <span>{formatDateTime(event.startTime)}</span>
           </div>
           
-          <div className="flex items-center text-sm text-gray-500">
+          <div className="flex items-center text-sm text-blue-600">
             <UserGroupIcon className="w-4 h-4 mr-2" />
             <span>{event.rsvpCount} RSVPs</span>
           </div>
@@ -137,7 +137,7 @@ export function EventCard({
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => onShare(event)}
-            className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+            className="px-4 py-2 border border-blue-300 rounded-lg text-blue-700 hover:bg-blue-50 transition-colors"
           >
             Share
           </motion.button>
@@ -149,7 +149,7 @@ export function EventCard({
               href={event.onchainAction}
               target="_blank"
               rel="noopener noreferrer"
-              className="px-3 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+              className="px-3 py-2 border border-blue-300 rounded-lg text-blue-700 hover:bg-blue-50 transition-colors"
             >
               <ArrowTopRightOnSquareIcon className="w-4 h-4" />
             </motion.a>

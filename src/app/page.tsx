@@ -74,14 +74,14 @@ export default function HomePage() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="min-h-screen bg-gray-50"
+      className="min-h-screen bg-blue-50"
     >
       {/* Header */}
       <motion.header
         initial={{ y: -50, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.1, duration: 0.5 }}
-        className="bg-white shadow-sm border-b border-gray-200"
+        className="bg-white shadow-sm border-b border-blue-200"
       >
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-18 sm:h-18">
@@ -91,7 +91,7 @@ export default function HomePage() {
                 alt="BaseTime" 
                 className="w-10 h-10 sm:w-12 sm:h-12 mr-2 sm:mr-3 rounded-lg"
               />
-              <h1 className="text-xl sm:text-2xl font-bold text-gray-900 font-display">BaseTime</h1>
+              <h1 className="text-xl sm:text-2xl font-bold text-blue-900 font-display">BaseTime</h1>
             </div>
             
             <div className="flex items-center gap-2 sm:gap-4">
@@ -115,16 +115,16 @@ export default function HomePage() {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-12"
         >
-          <h2 className="text-4xl font-bold text-gray-900 mb-4">
+          <h2 className="text-4xl font-bold text-blue-900 mb-4">
             Base App Event Manager
           </h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-4">
+          <p className="text-xl text-blue-700 max-w-2xl mx-auto mb-4">
           Manage and discover events, meetings, and posts.
           
           </p>
           {events.length > 0 && events[0]?.name === "Base Hackathon 2024" && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 max-w-md mx-auto">
-              <p className="text-sm text-blue-700">
+            <div className="bg-blue-100 border border-blue-300 rounded-lg p-4 max-w-md mx-auto">
+              <p className="text-sm text-blue-800">
                 📱 <strong>Demo Mode:</strong> Showing sample events. Connect your wallet and deploy contracts to create real events!
               </p>
             </div>
