@@ -21,6 +21,7 @@ export function CreateModal({ isOpen, onClose, onSubmit, isLoading = false, sele
     endTime: '',
     image: '',
     onchainAction: '',
+    isPublic: false,
   });
 
   // Set default date when selectedDate changes
@@ -37,7 +38,7 @@ export function CreateModal({ isOpen, onClose, onSubmit, isLoading = false, sele
 
   const [errors, setErrors] = useState<Partial<CreateEventData>>({});
 
-  const handleInputChange = (field: keyof CreateEventData, value: string) => {
+  const handleInputChange = (field: keyof CreateEventData, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     // Clear error when user starts typing
     if (errors[field]) {
@@ -113,6 +114,7 @@ export function CreateModal({ isOpen, onClose, onSubmit, isLoading = false, sele
       endTime: '',
       image: '',
       onchainAction: '',
+      isPublic: false,
     });
     setErrors({});
     onClose();
@@ -258,6 +260,20 @@ export function CreateModal({ isOpen, onClose, onSubmit, isLoading = false, sele
                 {errors.onchainAction && (
                   <p className="mt-1 text-sm text-red-600">{errors.onchainAction}</p>
                 )}
+              </div>
+
+              {/* Public Event Checkbox */}
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="isPublic"
+                  checked={formData.isPublic || false}
+                  onChange={(e) => handleInputChange('isPublic', e.target.checked)}
+                  className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                />
+                <label htmlFor="isPublic" className="ml-2 block text-sm text-gray-700">
+                  Make this a public event
+                </label>
               </div>
 
               {/* Submit Button */}

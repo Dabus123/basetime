@@ -64,7 +64,7 @@ export function useScheduledPosts() {
 
   const getPendingPosts = () => {
     return scheduledPosts.filter(
-      (post) => post.status === 'pending' && post.scheduledFor > new Date()
+      (post) => post.status === 'pending'
     );
   };
 

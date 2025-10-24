@@ -10,6 +10,7 @@ export interface Event {
   creator: string;
   isActive: boolean;
   rsvpCount: number;
+  isPublic?: boolean; // Flag to indicate if this is a public event
 }
 
 export interface EventPass {
@@ -26,6 +27,7 @@ export interface CreateEventData {
   endTime: string;
   image: string;
   onchainAction: string;
+  isPublic?: boolean; // Flag to indicate if this is a public event
 }
 
 export interface UserProfile {

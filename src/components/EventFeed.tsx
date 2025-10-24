@@ -14,6 +14,7 @@ interface EventFeedProps {
   userRSVPs: Set<number>;
   isLoading?: boolean;
   onCreateEvent?: (date: Date) => void;
+  viewMode?: 'list' | 'calendar';
 }
 
 type ViewMode = 'list' | 'calendar';
@@ -25,9 +26,13 @@ export function EventFeed({
   userRSVPs,
   isLoading = false,
   onCreateEvent,
+  viewMode: externalViewMode,
 }: EventFeedProps) {
-  const [viewMode, setViewMode] = useState<ViewMode>('calendar');
+  const [internalViewMode, setInternalViewMode] = useState<ViewMode>('calendar');
   const [filter, setFilter] = useState<'all' | 'upcoming' | 'live' | 'ended'>('all');
+  
+  // Use external viewMode if provided, otherwise use internal state
+  const viewMode = externalViewMode || internalViewMode;
 
   const filteredEvents = events.filter(event => {
     const now = Math.floor(Date.now() / 1000);
@@ -82,15 +87,15 @@ export function EventFeed({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 h-full overflow-hidden">
       {/* Header Controls */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-bold text-blue-900">Events</h2>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 px-4 pt-4 flex-shrink-0">
+        <div className="min-w-0 flex-1">
+          <h2 className="text-2xl font-bold text-blue-900 truncate">Events</h2>
           <p className="text-blue-700">{sortedEvents.length} events found</p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-shrink-0">
           {/* Filter Buttons */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -120,80 +125,84 @@ export function EventFeed({
             ))}
           </motion.div>
 
-          {/* View Mode Toggle */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, duration: 0.4 }}
-            className="flex bg-blue-100 rounded-lg p-1"
-          >
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={() => setViewMode('list')}
-              className={`p-2 rounded-md transition-all duration-200 ${
-                viewMode === 'list'
-                  ? 'bg-white text-blue-900 shadow-sm'
-                  : 'text-blue-600 hover:text-blue-900'
-              }`}
+          {/* View Mode Toggle - Only show when no external viewMode is provided */}
+          {!externalViewMode && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4, duration: 0.4 }}
+              className="flex bg-blue-100 rounded-lg p-1"
             >
-              <ListBulletIcon className="w-4 h-4" />
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={() => setViewMode('calendar')}
-              className={`p-2 rounded-md transition-all duration-200 ${
-                viewMode === 'calendar'
-                  ? 'bg-white text-blue-900 shadow-sm'
-                  : 'text-blue-600 hover:text-blue-900'
-              }`}
-            >
-              <CalendarIcon className="w-4 h-4" />
-            </motion.button>
-          </motion.div>
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => setInternalViewMode('list')}
+                className={`p-2 rounded-md transition-all duration-200 ${
+                  viewMode === 'list'
+                    ? 'bg-white text-blue-900 shadow-sm'
+                    : 'text-blue-600 hover:text-blue-900'
+                }`}
+              >
+                <ListBulletIcon className="w-4 h-4" />
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => setInternalViewMode('calendar')}
+                className={`p-2 rounded-md transition-all duration-200 ${
+                  viewMode === 'calendar'
+                    ? 'bg-white text-blue-900 shadow-sm'
+                    : 'text-blue-600 hover:text-blue-900'
+                }`}
+              >
+                <CalendarIcon className="w-4 h-4" />
+              </motion.button>
+            </motion.div>
+          )}
         </div>
       </div>
 
       {/* Events Content */}
-      {sortedEvents.length === 0 ? (
-        <div className="text-center py-12">
-          <CalendarIcon className="w-16 h-16 text-blue-300 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-blue-900 mb-2">No events found</h3>
-          <p className="text-blue-700">
-            {filter === 'all' 
-              ? 'No events have been created yet.' 
-              : `No ${filter} events found.`}
-          </p>
-        </div>
-      ) : (
-        <>
-          {viewMode === 'list' ? (
-            <div className="space-y-4">
-              {sortedEvents.map((event) => (
-                <EventCard
-                  key={event.id}
-                  event={event}
+      <div className="flex-1 overflow-y-auto px-4 pb-4">
+        {sortedEvents.length === 0 ? (
+          <div className="text-center py-12">
+            <CalendarIcon className="w-16 h-16 text-blue-300 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-blue-900 mb-2">No events found</h3>
+            <p className="text-blue-700">
+              {filter === 'all' 
+                ? 'No events have been created yet.' 
+                : `No ${filter} events found.`}
+            </p>
+          </div>
+        ) : (
+          <>
+            {viewMode === 'list' ? (
+              <div className="space-y-4">
+                {sortedEvents.map((event) => (
+                  <EventCard
+                    key={event.id}
+                    event={event}
+                    onRSVP={onRSVP}
+                    onShare={onShare}
+                    hasRSVPed={userRSVPs.has(event.id)}
+                  />
+                ))}
+              </div>
+            ) : (
+              <>
+                <CalendarView
+                  events={sortedEvents}
                   onRSVP={onRSVP}
                   onShare={onShare}
-                  hasRSVPed={userRSVPs.has(event.id)}
+                  userRSVPs={userRSVPs}
+                  isLoading={isLoading}
+                  onCreateEvent={onCreateEvent}
                 />
-              ))}
-            </div>
-          ) : (
-            <>
-              <CalendarView
-                events={sortedEvents}
-                onRSVP={onRSVP}
-                onShare={onShare}
-                userRSVPs={userRSVPs}
-                isLoading={isLoading}
-                onCreateEvent={onCreateEvent}
-              />
-            </>
-          )}
-        </>
-      )}
+              </>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }

@@ -7,7 +7,7 @@ import { Event } from '@/types';
 import { formatDate, formatTime, getEventStatus } from '@/utils/helpers';
 
 interface EventModalProps {
-  event: Event;
+  event: Event | null;
   onClose: () => void;
   onRSVP: (eventId: number) => void;
   onShare: (event: Event) => void;
@@ -16,6 +16,12 @@ interface EventModalProps {
 
 export function EventModal({ event, onClose, onRSVP, onShare, hasRSVPed }: EventModalProps) {
   const [isVisible, setIsVisible] = useState(false);
+  
+  // Don't render if no event is provided
+  if (!event) {
+    return null;
+  }
+  
   const eventStatus = getEventStatus(event.startTime, event.endTime);
 
   useEffect(() => {

@@ -35,6 +35,8 @@ export function TBAPostModal({
     imageHeader: '',
     imageDescription: '',
   });
+  
+  const [selectedTime, setSelectedTime] = useState('14:00'); // Default to 2 PM
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isPostingNow, setIsPostingNow] = useState(false);
@@ -46,7 +48,8 @@ export function TBAPostModal({
   // Base Social hook
   const { postToBaseSocial, isLoading: isPosting, isSuccess: postSuccess, txHash } = useBaseSocial();
 
-  const formatDate = (date: Date) => {
+  const formatDate = (date: Date | null) => {
+    if (!date) return 'Select a date';
     return date.toLocaleDateString('en-US', {
       weekday: 'long',
       year: 'numeric',
@@ -153,9 +156,14 @@ export function TBAPostModal({
       
       // If onSchedule is provided, schedule the post instead of posting immediately
       if (onSchedule) {
-        onSchedule(postData, selectedDate);
-        console.log('📅 Post scheduled for:', selectedDate);
-        alert(`✅ Post scheduled for ${selectedDate.toLocaleDateString()}!\n\nYou'll be prompted to post when it's time.`);
+        // Combine date and time
+        const [hours, minutes] = selectedTime.split(':').map(Number);
+        const scheduledDateTime = new Date(selectedDate);
+        scheduledDateTime.setHours(hours, minutes, 0, 0);
+        
+        onSchedule(postData, scheduledDateTime);
+        console.log('📅 Post scheduled for:', scheduledDateTime);
+        alert(`✅ Post scheduled for ${scheduledDateTime.toLocaleString()}!\n\nYou'll be prompted to post when it's time.`);
       } else {
         await onSubmit(postData);
       }
@@ -235,9 +243,6 @@ export function TBAPostModal({
     return (
       formData.header.trim() !== '' &&
       formData.description.trim() !== '' &&
-      (selectedFile || formData.image.trim() !== '') &&
-      formData.imageHeader.trim() !== '' &&
-      formData.imageDescription.trim() !== '' &&
       !isUploading
     );
   };
@@ -262,7 +267,7 @@ export function TBAPostModal({
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header with gradient */}
-            <div className="bg-gradient-to-r from-purple-500 to-pink-600 p-6 text-white flex-shrink-0">
+            <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-6 text-white flex-shrink-0">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-white bg-opacity-20 rounded-xl flex items-center justify-center">
@@ -270,7 +275,7 @@ export function TBAPostModal({
                   </div>
                   <div>
                     <h2 className="text-xl font-bold font-display">Schedule TBA Post</h2>
-                    <p className="text-purple-100 text-sm">
+                    <p className="text-blue-100 text-sm">
                       {formatDate(selectedDate)}
                     </p>
                   </div>
@@ -292,7 +297,7 @@ export function TBAPostModal({
                 {/* Post Header */}
                 <div>
                   <label htmlFor="header" className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                    <DocumentTextIcon className="w-4 h-4 text-purple-600" />
+                    <DocumentTextIcon className="w-4 h-4 text-blue-600" />
                     Post Header
                   </label>
                   <input
@@ -301,7 +306,7 @@ export function TBAPostModal({
                     value={formData.header}
                     onChange={(e) => handleChange('header', e.target.value)}
                     placeholder="Enter a catchy header for your post..."
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 outline-none"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 outline-none"
                     required
                   />
                 </div>
@@ -309,7 +314,7 @@ export function TBAPostModal({
                 {/* Post Description */}
                 <div>
                   <label htmlFor="description" className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                    <DocumentTextIcon className="w-4 h-4 text-purple-600" />
+                    <DocumentTextIcon className="w-4 h-4 text-blue-600" />
                     Post Description
                   </label>
                   <textarea
@@ -318,29 +323,39 @@ export function TBAPostModal({
                     onChange={(e) => handleChange('description', e.target.value)}
                     placeholder="Describe your TBA announcement..."
                     rows={4}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 outline-none resize-none"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 outline-none resize-none"
                     required
                   />
                 </div>
 
-                {/* Divider */}
-                <div className="relative py-4">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-gray-200"></div>
-                  </div>
-                  <div className="relative flex justify-center text-sm">
-                    <span className="px-4 bg-white text-gray-500 font-medium">Image Details</span>
-                  </div>
+                {/* Schedule Time */}
+                <div>
+                  <label htmlFor="time" className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
+                    <SparklesIcon className="w-4 h-4 text-blue-600" />
+                    Schedule Time
+                  </label>
+                  <input
+                    type="time"
+                    id="time"
+                    value={selectedTime}
+                    onChange={(e) => setSelectedTime(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 outline-none"
+                    required
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Scheduled for: {selectedDate.toLocaleDateString()} at {selectedTime}
+                  </p>
                 </div>
 
-                {/* Image Upload */}
-                <div>
-                  <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                    <PhotoIcon className="w-4 h-4 text-purple-600" />
-                    Upload Image
-                  </label>
+                {/* Optional Image Section */}
+                <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                  <div className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-3">
+                    <PhotoIcon className="w-4 h-4 text-gray-500" />
+                    Optional Image
+                    <span className="text-xs text-gray-400 ml-auto">(Currently not supported in Base social)</span>
+                  </div>
                   
-                  {/* File Input */}
+                  {/* Compact File Input */}
                   <div className="relative">
                     <input
                       type="file"
@@ -352,31 +367,23 @@ export function TBAPostModal({
                     />
                     <label
                       htmlFor="image"
-                      className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-xl cursor-pointer transition-all duration-200 ${
+                      className={`flex items-center justify-center w-full h-16 border border-dashed rounded-lg cursor-pointer transition-all duration-200 ${
                         isUploading || isSubmitting
-                          ? 'border-gray-300 bg-gray-50 cursor-not-allowed'
+                          ? 'border-gray-300 bg-gray-100 cursor-not-allowed'
                           : imagePreview
-                          ? 'border-purple-300 bg-purple-50 hover:bg-purple-100'
-                          : 'border-gray-300 bg-gray-50 hover:bg-gray-100 hover:border-purple-400'
+                          ? 'border-green-300 bg-green-50 hover:bg-green-100'
+                          : 'border-gray-300 bg-white hover:bg-gray-50 hover:border-gray-400'
                       }`}
                     >
                       {imagePreview ? (
-                        <div className="flex items-center gap-2 text-purple-600">
-                          <ArrowUpTrayIcon className="w-5 h-5" />
-                          <span className="text-sm font-medium">Change Image</span>
+                        <div className="flex items-center gap-2 text-green-600">
+                          <ArrowUpTrayIcon className="w-4 h-4" />
+                          <span className="text-sm">Change Image</span>
                         </div>
                       ) : (
-                        <div className="flex flex-col items-center gap-2">
-                          <ArrowUpTrayIcon className="w-8 h-8 text-gray-400" />
-                          <div className="text-sm text-gray-600 text-center">
-                            <span className="font-medium text-purple-600">Click to upload</span> or drag and drop
-                          </div>
-                          <div className="text-xs text-gray-500">PNG, JPG, GIF, WebP up to 10MB</div>
-                          {selectedFile && (
-                            <div className="text-xs text-green-600 font-medium">
-                              Selected: {selectedFile.name} ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
-                            </div>
-                          )}
+                        <div className="flex items-center gap-2 text-gray-500">
+                          <ArrowUpTrayIcon className="w-4 h-4" />
+                          <span className="text-sm">Add Image (Optional)</span>
                         </div>
                       )}
                     </label>
@@ -384,65 +391,32 @@ export function TBAPostModal({
 
                   {/* Upload Progress */}
                   {isUploading && (
-                    <div className="mt-3">
+                    <div className="mt-2">
                       <div className="flex items-center justify-between text-xs text-gray-600 mb-1">
-                        <span>Uploading to IPFS...</span>
+                        <span>Uploading...</span>
                         <span>{uploadProgress}%</span>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div className="w-full bg-gray-200 rounded-full h-1.5">
                         <div
-                          className="bg-gradient-to-r from-purple-500 to-pink-600 h-2 rounded-full transition-all duration-300"
+                          className="bg-green-500 h-1.5 rounded-full transition-all duration-300"
                           style={{ width: `${uploadProgress}%` }}
                         />
                       </div>
                     </div>
                   )}
 
-                  {/* Image Preview */}
+                  {/* Compact Image Preview */}
                   {imagePreview && !isUploading && (
-                    <div className="mt-3 rounded-lg overflow-hidden border border-gray-200 shadow-sm">
+                    <div className="mt-2 rounded-lg overflow-hidden border border-gray-200">
                       <img
                         src={imagePreview}
                         alt="Preview"
-                        className="w-full h-48 object-cover"
+                        className="w-full h-24 object-cover"
                       />
                     </div>
                   )}
                 </div>
 
-                {/* Image Header */}
-                <div>
-                  <label htmlFor="imageHeader" className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                    <DocumentTextIcon className="w-4 h-4 text-purple-600" />
-                    Image Header
-                  </label>
-                  <input
-                    type="text"
-                    id="imageHeader"
-                    value={formData.imageHeader}
-                    onChange={(e) => handleChange('imageHeader', e.target.value)}
-                    placeholder="Header text for the image..."
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 outline-none"
-                    required
-                  />
-                </div>
-
-                {/* Image Description */}
-                <div>
-                  <label htmlFor="imageDescription" className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                    <DocumentTextIcon className="w-4 h-4 text-purple-600" />
-                    Image Description
-                  </label>
-                  <textarea
-                    id="imageDescription"
-                    value={formData.imageDescription}
-                    onChange={(e) => handleChange('imageDescription', e.target.value)}
-                    placeholder="Describe what the image shows..."
-                    rows={3}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 outline-none resize-none"
-                    required
-                  />
-                </div>
               </div>
 
               {/* Footer Actions */}
@@ -486,7 +460,7 @@ export function TBAPostModal({
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       disabled={!isFormValid() || isSubmitting || isPostingNow}
-                      className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:from-purple-700 hover:to-pink-700 transition-all duration-200 font-medium shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                      className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-200 font-medium shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                     >
                       {isSubmitting ? (
                         <>

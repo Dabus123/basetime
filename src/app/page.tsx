@@ -1,11 +1,12 @@
 'use client';
 
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ConnectButton } from '@/components/ConnectButton';
 import { CreateEventButton } from '@/components/CreateEventButton';
 import { EventFeed } from '@/components/EventFeed';
 import { CreateModal } from '@/components/CreateModal';
+import { CalendarView } from '@/components/CalendarView';
 import { useEvents, useEventActions, useUserRSVPs } from '@/hooks/useEvents';
 import { useAccount } from 'wagmi';
 import { CreateEventData, Event } from '@/types';
@@ -19,6 +20,9 @@ export default function HomePage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [showNotification, setShowNotification] = useState(false);
+  const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
 
   const handleCreateEvent = async (eventData: CreateEventData) => {
     setIsCreating(true);
@@ -39,6 +43,9 @@ export default function HomePage() {
       refreshEvents();
       setIsCreateModalOpen(false);
       setSelectedDate(null);
+      setShowNotification(true);
+      // Hide notification after 3 seconds
+      setTimeout(() => setShowNotification(false), 3000);
     }
   }, [isSuccess, refreshEvents]);
 
@@ -74,73 +81,162 @@ export default function HomePage() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="min-h-screen bg-blue-50"
+      className="min-h-screen bg-white"
     >
-      {/* Header */}
-      <motion.header
-        initial={{ y: -50, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.1, duration: 0.5 }}
-        className="bg-white shadow-sm border-b border-blue-200"
-      >
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-18 sm:h-18">
-            <div className="flex items-center">
-              <img 
-                src="/splash.png" 
-                alt="BaseTime" 
-                className="w-10 h-10 sm:w-12 sm:h-12 mr-2 sm:mr-3 rounded-lg"
-              />
-              <h1 className="text-xl sm:text-2xl font-bold text-blue-900 font-display">BaseTime</h1>
-            </div>
-            
-            <div className="flex items-center gap-2 sm:gap-4">
-              <CreateEventButton onCreateEvent={() => setIsCreateModalOpen(true)} />
-              <ConnectButton />
-            </div>
-          </div>
-        </div>
-      </motion.header>
+            {/* Mobile Header */}
+            <motion.header
+              initial={{ y: -50, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.1, duration: 0.5 }}
+              className="bg-blue-600 text-white px-4 py-3 flex-shrink-0"
+            >
+              <div className="flex items-center justify-between max-w-full">
+                <div className="flex items-center gap-3 min-w-0 flex-1">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setIsSideMenuOpen(true)}
+                    className="p-1 flex-shrink-0"
+                  >
+                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
+                    </svg>
+                  </motion.button>
+                  <span className="text-lg font-medium truncate">BaseTime</span>
+                </div>
+              </div>
+            </motion.header>
 
-      {/* Main Content */}
-      <motion.main
-        initial={{ y: 50, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.2, duration: 0.5 }}
-        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
-      >
-        {/* Hero Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-12"
-        >
-          <h2 className="text-4xl font-bold text-blue-900 mb-4">
-            Base App Event Manager
-          </h2>
-          <p className="text-xl text-blue-700 max-w-2xl mx-auto mb-4">
-          Manage and discover events, meetings, and posts.
-          
-          </p>
-          {events.length > 0 && events[0]?.name === "Base Hackathon 2024" && (
-            <div className="bg-blue-100 border border-blue-300 rounded-lg p-4 max-w-md mx-auto">
-              <p className="text-sm text-blue-800">
-                📱 <strong>Demo Mode:</strong> Showing sample events. Connect your wallet and deploy contracts to create real events!
-              </p>
-            </div>
-          )}
-        </motion.div>
+            {/* Main Content */}
+            <motion.main
+              initial={{ y: 50, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.2, duration: 0.5 }}
+              className="flex flex-col h-screen"
+            >
+              {/* Calendar or List View */}
+              <div className="flex-1 overflow-hidden">
+                {viewMode === 'calendar' ? (
+                  <CalendarView
+                    events={events}
+                    onRSVP={handleRSVP}
+                    onShare={handleShare}
+                    userRSVPs={userRSVPs}
+                    isLoading={isLoading}
+                    onCreateEvent={handleDateSelect}
+                  />
+                ) : (
+                  <div className="h-full overflow-hidden">
+                    <EventFeed
+                      events={events}
+                      onRSVP={handleRSVP}
+                      onShare={handleShare}
+                      userRSVPs={userRSVPs}
+                      isLoading={isLoading}
+                      onCreateEvent={handleDateSelect}
+                      viewMode="list"
+                    />
+                  </div>
+                )}
+              </div>
 
-        {/* Events Feed */}
-        <EventFeed
-          events={events}
-          onRSVP={handleRSVP}
-          onShare={handleShare}
-          userRSVPs={userRSVPs}
-          isLoading={isLoading}
-          onCreateEvent={handleDateSelect}
-        />
+        {/* Bottom notification */}
+        {showNotification && (
+          <motion.div
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 100, opacity: 0 }}
+            className="bg-green-100 text-green-800 px-4 py-2 text-center text-sm"
+          >
+            Event Created
+          </motion.div>
+        )}
       </motion.main>
+
+      {/* Side Menu */}
+      <AnimatePresence>
+        {isSideMenuOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsSideMenuOpen(false)}
+              className="fixed inset-0 bg-black bg-opacity-50 z-40"
+            />
+            
+            {/* Side Menu */}
+            <motion.div
+              initial={{ x: -300 }}
+              animate={{ x: 0 }}
+              exit={{ x: -300 }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="fixed left-0 top-0 h-full w-80 bg-white shadow-xl z-50"
+            >
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-8">
+                  <h2 className="text-xl font-bold text-gray-900">Menu</h2>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setIsSideMenuOpen(false)}
+                    className="p-2 hover:bg-gray-100 rounded-lg"
+                  >
+                    <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </motion.button>
+                </div>
+                
+                <div className="space-y-4">
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => {
+                      setViewMode('calendar');
+                      setIsSideMenuOpen(false);
+                    }}
+                    className={`w-full text-left p-4 rounded-lg transition-colors ${
+                      viewMode === 'calendar' 
+                        ? 'bg-blue-100 text-blue-900 border-2 border-blue-300' 
+                        : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
+                      </svg>
+                      <span className="font-medium">Calendar View</span>
+                    </div>
+                  </motion.button>
+                  
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => {
+                      setViewMode('list');
+                      setIsSideMenuOpen(false);
+                    }}
+                    className={`w-full text-left p-4 rounded-lg transition-colors ${
+                      viewMode === 'list' 
+                        ? 'bg-blue-100 text-blue-900 border-2 border-blue-300' 
+                        : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
+                      </svg>
+                      <span className="font-medium">List View</span>
+                    </div>
+                  </motion.button>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* Create Event Modal */}
       <CreateModal

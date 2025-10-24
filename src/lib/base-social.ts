@@ -111,6 +111,11 @@ export function formatPostForBaseSocial(
   imageHeader: string,
   imageDescription: string
 ): string {
-  return `${header}\n\n${description}\n\n${imageHeader}: ${imageDescription}`;
+  // Include image URL in text to trigger automatic image detection
+  // This is a common approach for social platforms
+  if (imageUrl) {
+    return `${header}\n\n${description}\n\n${imageUrl}`;
+  }
+  return `${header}\n\n${description}`;
 }
 

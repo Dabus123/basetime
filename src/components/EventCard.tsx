@@ -23,6 +23,32 @@ export function EventCard({
   isRSVPLoading = false,
   className = '',
 }: EventCardProps) {
+  const getCardTheme = () => {
+    if (event.isPublic) {
+      return {
+        background: 'bg-gradient-to-br from-green-50 to-green-100',
+        icon: 'text-green-300',
+        title: 'text-green-900',
+        description: 'text-green-700',
+        details: 'text-green-600',
+        button: 'bg-green-600 hover:bg-green-700',
+        shareButton: 'border-green-300 text-green-700 hover:bg-green-50',
+        actionButton: 'border-green-300 text-green-700 hover:bg-green-50'
+      };
+    }
+    return {
+      background: 'bg-gradient-to-br from-blue-50 to-blue-100',
+      icon: 'text-blue-300',
+      title: 'text-blue-900',
+      description: 'text-blue-700',
+      details: 'text-blue-600',
+      button: 'bg-blue-600 hover:bg-blue-700',
+      shareButton: 'border-blue-300 text-blue-700 hover:bg-blue-50',
+      actionButton: 'border-blue-300 text-blue-700 hover:bg-blue-50'
+    };
+  };
+
+  const theme = getCardTheme();
   const eventStatus = isEventLive(event) ? 'live' : isEventUpcoming(event) ? 'upcoming' : 'ended';
   
   const getStatusColor = () => {
@@ -30,7 +56,7 @@ export function EventCard({
       case 'live':
         return 'bg-green-100 text-green-800 border-green-200';
       case 'upcoming':
-        return 'bg-blue-100 text-blue-800 border-blue-200';
+        return event.isPublic ? 'bg-green-100 text-green-800 border-green-200' : 'bg-blue-100 text-blue-800 border-blue-200';
       case 'ended':
         return 'bg-gray-100 text-gray-800 border-gray-200';
       default:
@@ -59,7 +85,7 @@ export function EventCard({
       className={`bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow ${className}`}
     >
       {/* Event Image */}
-      <div className="relative h-48 bg-gradient-to-br from-blue-50 to-blue-100">
+      <div className={`relative h-48 ${theme.background}`}>
         {event.image ? (
           <img
             src={event.image}
@@ -71,7 +97,7 @@ export function EventCard({
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <CalendarIcon className="w-16 h-16 text-blue-300" />
+            <CalendarIcon className={`w-16 h-16 ${theme.icon}`} />
           </div>
         )}
         
@@ -84,23 +110,24 @@ export function EventCard({
       {/* Event Content */}
       <div className="p-4">
         {/* Event Title */}
-        <h3 className="text-lg font-semibold text-blue-900 mb-2 line-clamp-2 font-display">
+        <h3 className={`text-lg font-semibold ${theme.title} mb-2 line-clamp-2 font-display`}>
           {event.name}
+          {event.isPublic && <span className="ml-2 text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">Public</span>}
         </h3>
 
         {/* Event Description */}
-        <p className="text-blue-700 text-sm mb-3 line-clamp-2">
+        <p className={`${theme.description} text-sm mb-3 line-clamp-2`}>
           {truncateText(event.description, 120)}
         </p>
 
         {/* Event Details */}
         <div className="space-y-2 mb-4">
-          <div className="flex items-center text-sm text-blue-600">
+          <div className={`flex items-center text-sm ${theme.details}`}>
             <ClockIcon className="w-4 h-4 mr-2" />
             <span>{formatDateTime(event.startTime)}</span>
           </div>
           
-          <div className="flex items-center text-sm text-blue-600">
+          <div className={`flex items-center text-sm ${theme.details}`}>
             <UserGroupIcon className="w-4 h-4 mr-2" />
             <span>{event.rsvpCount} RSVPs</span>
           </div>
@@ -118,7 +145,7 @@ export function EventCard({
                 ? 'bg-green-100 text-green-800 cursor-not-allowed'
                 : eventStatus === 'ended'
                 ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                : 'bg-blue-600 text-white hover:bg-blue-700'
+                : `${theme.button} text-white`
             }`}
           >
             {isRSVPLoading ? (
@@ -137,7 +164,7 @@ export function EventCard({
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => onShare(event)}
-            className="px-4 py-2 border border-blue-300 rounded-lg text-blue-700 hover:bg-blue-50 transition-colors"
+            className={`px-4 py-2 border rounded-lg transition-colors ${theme.shareButton}`}
           >
             Share
           </motion.button>
@@ -149,7 +176,7 @@ export function EventCard({
               href={event.onchainAction}
               target="_blank"
               rel="noopener noreferrer"
-              className="px-3 py-2 border border-blue-300 rounded-lg text-blue-700 hover:bg-blue-50 transition-colors"
+              className={`px-3 py-2 border rounded-lg transition-colors ${theme.actionButton}`}
             >
               <ArrowTopRightOnSquareIcon className="w-4 h-4" />
             </motion.a>

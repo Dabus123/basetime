@@ -32,24 +32,57 @@ export function CalendarView({ events, onRSVP, onShare, userRSVPs, isLoading, on
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isDayActionModalOpen, setIsDayActionModalOpen] = useState(false);
   const [isTBAModalOpen, setIsTBAModalOpen] = useState(false);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [animationDirection, setAnimationDirection] = useState<'left' | 'right' | null>(null);
+  const [showTimelineView, setShowTimelineView] = useState(false);
   
   // Scheduling hooks
-  const { addScheduledPost, getDuePosts } = useScheduledPosts();
+  const { addScheduledPost, getDuePosts, updatePostStatus, getPendingPosts } = useScheduledPosts();
   const { postToBaseSocial } = useBaseSocial();
 
   // Check for due posts every minute
   useEffect(() => {
-    const checkDuePosts = () => {
+    let isProcessing = false;
+    
+    const checkDuePosts = async () => {
+      if (isProcessing) {
+        console.log('⏳ Already processing posts, skipping...');
+        return;
+      }
+      
       const duePosts = getDuePosts();
       if (duePosts.length > 0) {
-        const post = duePosts[0]; // Get the first due post
-        const confirmPost = confirm(
-          `📅 It's time to post!\n\n"${post.header}"\n\nPost now?`
-        );
+        isProcessing = true;
+        console.log('📅 Found due posts:', duePosts.length);
         
-        if (confirmPost) {
-          postToBaseSocial(post);
+        for (const post of duePosts) {
+          console.log('📝 Processing due post:', post.header);
+          
+          try {
+            // Post without image for now
+            const postData = {
+              header: post.header,
+              description: post.description,
+              imageUrl: '', // No image for now
+              imageHeader: post.imageHeader,
+              imageDescription: post.imageDescription,
+            };
+            
+            await postToBaseSocial(postData);
+            
+            // Update post status to posted
+            updatePostStatus(post.id, 'posted');
+            
+            console.log('✅ Successfully posted:', post.header);
+          } catch (error) {
+            console.error('❌ Failed to post:', post.header, error);
+            // Keep the post as pending so it can be retried
+          }
         }
+        
+        isProcessing = false;
       }
     };
 
@@ -60,14 +93,85 @@ export function CalendarView({ events, onRSVP, onShare, userRSVPs, isLoading, on
     const interval = setInterval(checkDuePosts, 60000);
 
     return () => clearInterval(interval);
-  }, [getDuePosts, postToBaseSocial]);
+  }, []); // Empty dependency array to prevent constant re-running
+
+  // Get scheduled posts for a specific date
+  const getScheduledPostsForDate = (date: Date) => {
+    const pendingPosts = getPendingPosts();
+    return pendingPosts.filter(post => {
+      const postDate = new Date(post.scheduledFor);
+      return postDate.toDateString() === date.toDateString();
+    });
+  };
+
+  // Get events for a specific date
+  const getEventsForDate = (date: Date) => {
+    return events.filter(event => {
+      const eventDate = new Date(event.startTime * 1000);
+      return eventDate.toDateString() === date.toDateString();
+    });
+  };
+
+  // Get events for current time slot on selected day
+  const getEventsForTimeSlot = (hour: number) => {
+    const targetDate = selectedDate || new Date();
+    targetDate.setHours(hour, 0, 0, 0);
+    const endHour = new Date(targetDate);
+    endHour.setHours(hour + 1, 0, 0, 0);
+    
+    return events.filter(event => {
+      const eventStart = new Date(event.startTime * 1000);
+      const eventEnd = new Date(event.endTime * 1000);
+      
+      return eventStart < endHour && eventEnd > targetDate;
+    });
+  };
+
+  // Swipe handling for month navigation
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd || isAnimating) return;
+    
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > 50;
+    const isRightSwipe = distance < -50;
+
+    if (isLeftSwipe) {
+      // Swipe left - next month
+      setIsAnimating(true);
+      setAnimationDirection('left');
+      setTimeout(() => {
+        setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1));
+        setIsAnimating(false);
+        setAnimationDirection(null);
+      }, 150);
+    }
+    if (isRightSwipe) {
+      // Swipe right - previous month
+      setIsAnimating(true);
+      setAnimationDirection('right');
+      setTimeout(() => {
+        setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1));
+        setIsAnimating(false);
+        setAnimationDirection(null);
+      }, 150);
+    }
+  };
 
   const monthNames = [
     'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'
   ];
 
-  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const dayNames = ['M', 'D', 'M', 'D', 'F', 'S', 'S'];
 
   const calendarDays = useMemo(() => {
     const year = currentDate.getFullYear();
@@ -80,251 +184,304 @@ export function CalendarView({ events, onRSVP, onShare, userRSVPs, isLoading, on
     
     const days: CalendarDay[] = [];
     
-    // Add empty cells for days before the first day of the month
-    for (let i = 0; i < firstDayOfWeek; i++) {
+    // Previous month's trailing days
+    const prevMonth = new Date(year, month - 1, 0);
+    for (let i = firstDayOfWeek - 1; i >= 0; i--) {
+      const date = new Date(year, month - 1, prevMonth.getDate() - i);
       days.push({
-        date: new Date(year, month, 0), // This will be ignored in rendering
+        date,
         isCurrentMonth: false,
         isToday: false,
-        events: [],
+        events: getEventsForDate(date),
       });
     }
     
     // Current month's days
-    const today = new Date();
     for (let day = 1; day <= daysInMonth; day++) {
       const date = new Date(year, month, day);
-      const dayEvents = events.filter(event => {
-        const eventDate = new Date(event.startTime * 1000);
-        return eventDate.getDate() === day && 
-               eventDate.getMonth() === month && 
-               eventDate.getFullYear() === year;
-      });
+      const today = new Date();
+      const isToday = date.toDateString() === today.toDateString();
       
       days.push({
         date,
         isCurrentMonth: true,
-        isToday: date.toDateString() === today.toDateString(),
-        events: dayEvents,
+        isToday,
+        events: getEventsForDate(date),
       });
     }
     
-    // Fill remaining cells to complete the grid (but don't show next month's dates)
-    const totalCells = Math.ceil(days.length / 7) * 7; // Round up to complete weeks
-    while (days.length < totalCells) {
+    // Next month's leading days
+    const remainingDays = 42 - days.length; // 6 weeks * 7 days
+    for (let day = 1; day <= remainingDays; day++) {
+      const date = new Date(year, month + 1, day);
       days.push({
-        date: new Date(year, month + 1, 0), // This will be ignored in rendering
+        date,
         isCurrentMonth: false,
         isToday: false,
-        events: [],
+        events: getEventsForDate(date),
       });
     }
     
     return days;
   }, [currentDate, events]);
 
-  const navigateMonth = (direction: 'prev' | 'next') => {
-    setCurrentDate(prev => {
-      const newDate = new Date(prev);
-      if (direction === 'prev') {
-        newDate.setMonth(prev.getMonth() - 1);
-      } else {
-        newDate.setMonth(prev.getMonth() + 1);
-      }
-      return newDate;
-    });
+  const handleDateClick = (date: Date) => {
+    setSelectedDate(date);
+    setShowTimelineView(true);
   };
 
-  const handleEventClick = (event: Event, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setSelectedEvent(event);
-  };
-
-  const handleDayClick = (day: CalendarDay) => {
-    // Always show day action modal when clicking a day
-    setSelectedDate(day.date);
-    setIsDayActionModalOpen(true);
-  };
-
-  const handleCreateEvent = () => {
-    setIsDayActionModalOpen(false);
-    if (selectedDate && onCreateEvent) {
-      onCreateEvent(selectedDate);
-    }
-  };
-
-  const handleScheduleTBA = () => {
-    setIsDayActionModalOpen(false);
-    setIsTBAModalOpen(true);
-  };
-
-  const handleTBASubmit = async (data: TBAPostData) => {
-    console.log('📝 TBA Post Data:', data);
-    console.log('📅 Scheduled for:', selectedDate);
+  const handleTBASubmit = (postData: TBAPostData) => {
+    // For now, we'll schedule for the selected date at 14:00 (2 PM)
+    const scheduledDateTime = new Date(selectedDate || new Date());
+    scheduledDateTime.setHours(14, 0, 0, 0);
     
-    // Schedule the post
-    const scheduledPost = addScheduledPost(data, selectedDate!);
-    
-    console.log('📦 Scheduled Post:', scheduledPost);
-    console.log('✅ Post scheduled successfully!');
-    
-    alert(`✅ Post scheduled for ${selectedDate!.toLocaleDateString()}!\n\nYou'll be prompted to post when it's time.`);
+    addScheduledPost(postData, scheduledDateTime);
+    setIsTBAModalOpen(false);
   };
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
-  }
 
   return (
-    <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-      {/* Calendar Header */}
-      <div className="flex items-center justify-between p-4 sm:p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-100">
-        <div className="flex items-center gap-2 sm:gap-3">
-          <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
-            <span className="text-white font-bold text-sm sm:text-lg">
-              {monthNames[currentDate.getMonth()].charAt(0)}
-            </span>
-          </div>
-          <div>
-            <h2 className="text-lg sm:text-xl md:text-2xl text-gray-900 font-display">
-              {currentDate.getMonth() === new Date().getMonth() && currentDate.getFullYear() === new Date().getFullYear() ? (
-                <span className="font-bold">{new Date().getDate()}</span>
-              ) : null} <span className="font-bold">{monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}</span>
-            </h2>
-            <p className="text-xs sm:text-sm text-gray-600 hidden sm:block">Plan your events with precision</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-1 sm:gap-2">
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => navigateMonth('prev')}
-            className="p-2 sm:p-3 rounded-xl bg-white hover:bg-gray-50 transition-all duration-200 shadow-sm border border-gray-200"
-          >
-            <ChevronLeftIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
-          </motion.button>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => navigateMonth('next')}
-            className="p-2 sm:p-3 rounded-xl bg-white hover:bg-gray-50 transition-all duration-200 shadow-sm border border-gray-200"
-          >
-            <ChevronRightIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
-          </motion.button>
-        </div>
-      </div>
-
-      {/* Day Names Header */}
-      <div className="grid grid-cols-7 bg-gray-50/50">
-        {dayNames.map(day => (
-          <div key={day} className="p-2 sm:p-3 md:p-4 text-center text-xs sm:text-sm font-semibold text-gray-600 uppercase tracking-wide">
-            {day}
-          </div>
-        ))}
-      </div>
-
-      {/* Calendar Grid */}
-      <div className="grid grid-cols-7 bg-white">
-        {calendarDays.map((day, index) => (
-          <motion.div
-            key={index}
-            whileHover={{ scale: day.isCurrentMonth ? 1.02 : 1 }}
-            whileTap={{ scale: day.isCurrentMonth ? 0.98 : 1 }}
-            onClick={() => day.isCurrentMonth ? handleDayClick(day) : undefined}
-            className={`
-              min-h-[80px] sm:min-h-[100px] md:min-h-[120px] lg:min-h-[140px] p-2 sm:p-3 border-r border-b border-gray-100 relative
-              ${day.isCurrentMonth ? 'bg-white hover:bg-blue-50/30 cursor-pointer' : 'bg-gray-50/30'}
-              ${day.isToday ? 'bg-gradient-to-br from-blue-50 to-indigo-50 ring-2 ring-blue-200' : ''}
-              transition-all duration-200 group
-            `}
-          >
-            <div className="flex flex-col h-full">
-              {/* Date Number */}
-              <div className={`
-                text-xs sm:text-sm font-semibold mb-1 sm:mb-2 flex items-center justify-between
-                ${day.isCurrentMonth ? 'text-gray-900' : 'text-transparent'}
-                ${day.isToday ? 'text-blue-600 font-bold' : ''}
-              `}>
-                <span className="text-sm sm:text-base md:text-lg">
-                  {day.isCurrentMonth ? day.date.getDate() : ''}
-                </span>
-                {day.isCurrentMonth && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                  >
-                    <PlusIcon className="w-4 h-4 text-gray-400 hover:text-blue-500" />
-                  </motion.div>
-                )}
-              </div>
-
-              {/* Events */}
-              <div className="flex-1 space-y-1 sm:space-y-1.5">
-                {day.isCurrentMonth && day.events.slice(0, 2).map((event) => (
-                  <motion.div
-                    key={event.id}
-                    whileHover={{ scale: 1.02 }}
-                    onClick={(e) => handleEventClick(event, e)}
-                    className="flex items-center gap-1 sm:gap-2 p-1 sm:p-2 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 transition-all duration-200 cursor-pointer border border-blue-100 hover:border-blue-200"
-                  >
-                    <img
-                      src={event.image}
-                      alt={event.name}
-                      className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 rounded-md object-cover flex-shrink-0 shadow-sm"
-                    />
-                    <span className="text-xs text-blue-800 font-medium truncate">
-                      {event.name}
-                    </span>
-                  </motion.div>
-                ))}
-                {day.isCurrentMonth && day.events.length > 2 && (
-                  <div className="text-xs text-gray-500 text-center py-1 px-1 sm:px-2 bg-gray-100 rounded-md">
-                    +{day.events.length - 2} more
-                  </div>
-                )}
-              </div>
+    <div className="flex flex-col h-full relative overflow-hidden">
+      {/* Calendar View */}
+      <motion.div
+        className="flex flex-col h-full"
+        animate={{
+          x: showTimelineView ? '-100%' : '0%'
+        }}
+        transition={{
+          type: "spring",
+          damping: 25,
+          stiffness: 200
+        }}
+      >
+        {/* Calendar Grid */}
+      <div 
+        className="bg-white border-b border-gray-200 relative overflow-hidden flex-shrink-0"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
+        <motion.div 
+          className="px-4 py-3"
+          animate={{
+            x: animationDirection === 'left' ? -20 : animationDirection === 'right' ? 20 : 0,
+            opacity: isAnimating ? 0.7 : 1
+          }}
+          transition={{
+            duration: 0.15,
+            ease: "easeInOut"
+          }}
+        >
+          {/* Month header */}
+          <div className="flex items-center justify-between mb-4">
+            <motion.h2 
+              key={`${currentDate.getMonth()}-${currentDate.getFullYear()}`}
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.2 }}
+              className="text-lg font-semibold text-gray-900"
+            >
+              {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
+            </motion.h2>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1))}
+                className="p-1 hover:bg-gray-100 rounded"
+              >
+                <ChevronLeftIcon className="w-5 h-5 text-gray-600" />
+              </button>
+              <button
+                onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1))}
+                className="p-1 hover:bg-gray-100 rounded"
+              >
+                <ChevronRightIcon className="w-5 h-5 text-gray-600" />
+              </button>
             </div>
-          </motion.div>
-        ))}
+          </div>
+          
+          {/* Days of week */}
+          <div className="grid grid-cols-7 gap-1 mb-2">
+            {dayNames.map((day, index) => (
+              <div key={index} className="text-center text-xs font-medium text-gray-500 py-1">
+                {day}
+              </div>
+            ))}
+          </div>
+          
+          {/* Calendar dates */}
+          <div className="grid grid-cols-7 gap-1">
+            {calendarDays.map((day, index) => {
+              const isSelected = selectedDate && day.date.toDateString() === selectedDate.toDateString();
+              
+              return (
+                <motion.div
+                  key={index}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => handleDateClick(day.date)}
+                  className={`aspect-square flex flex-col items-center justify-center text-sm font-medium cursor-pointer rounded-lg ${
+                    day.isCurrentMonth 
+                      ? day.isToday 
+                        ? 'bg-blue-600 text-white' 
+                        : isSelected
+                        ? 'bg-blue-100 text-blue-900 border-2 border-blue-300'
+                        : 'text-gray-900 hover:bg-gray-100'
+                      : 'text-gray-300'
+                  }`}
+                >
+                  <span>{day.date.getDate()}</span>
+                  {day.events.length > 0 && (
+                    <div className="w-1 h-1 bg-blue-500 rounded-full mt-1"></div>
+                  )}
+                  {getScheduledPostsForDate(day.date).length > 0 && (
+                    <div className="w-1 h-1 bg-blue-500 rounded-full mt-1"></div>
+                  )}
+                </motion.div>
+              );
+            })}
+          </div>
+        </motion.div>
+      </div>
+      </motion.div>
+
+      {/* Timeline View */}
+      <motion.div
+        className="absolute inset-0 flex flex-col h-full bg-white"
+        initial={{ x: '100%' }}
+        animate={{
+          x: showTimelineView ? '0%' : '100%'
+        }}
+        transition={{
+          type: "spring",
+          damping: 25,
+          stiffness: 200
+        }}
+      >
+        {/* Timeline Header */}
+        <div className="bg-blue-600 text-white px-4 py-3 flex items-center justify-between flex-shrink-0">
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setShowTimelineView(false)}
+            className="p-1"
+          >
+            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
+            </svg>
+          </motion.button>
+          <div className="text-center">
+            <h2 className="text-lg font-medium">
+              {selectedDate ? selectedDate.toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                month: 'long', 
+                day: 'numeric' 
+              }) : 'Select a day'}
+            </h2>
+          </div>
+          <div className="w-6"></div> {/* Spacer for centering */}
+        </div>
+
+        {/* Timeline Content - Unified scrolling */}
+        <div className="flex-1 overflow-y-auto">
+          <div style={{ height: '2880px' }}> {/* 24 hours * 120px */}
+            {Array.from({ length: 24 }, (_, hour) => (
+              <div key={hour} className="flex h-30 border-b border-gray-200" style={{ height: '120px' }}>
+                {/* Time column */}
+                <div className="w-16 bg-gray-50 border-r border-gray-200 flex-shrink-0 flex items-center justify-center">
+                  <span className="text-xs text-gray-500 font-medium">
+                    {String(hour).padStart(2, '0')}:00
+                  </span>
+                </div>
+                
+                {/* Events area */}
+                <div className="flex-1 relative px-4 py-2">
+                  {/* Regular events */}
+                  {getEventsForTimeSlot(hour).map((event, index) => (
+                    <motion.div
+                      key={event.id}
+                      whileHover={{ scale: 1.02 }}
+                      onClick={() => setSelectedEvent(event)}
+                      className="h-16 bg-blue-200 rounded-lg flex items-center px-3 mb-1 cursor-pointer"
+                    >
+                      <span className="text-sm font-medium text-gray-800 truncate">
+                        {event.name}
+                      </span>
+                    </motion.div>
+                  ))}
+                  
+                  {/* Scheduled posts */}
+                  {getPendingPosts().filter(post => {
+                    const postDate = new Date(post.scheduledFor);
+                    const targetDate = selectedDate || new Date();
+                    return postDate.toDateString() === targetDate.toDateString() && 
+                           postDate.getHours() === hour;
+                  }).map((post, index) => (
+                    <motion.div
+                      key={post.id}
+                      whileHover={{ scale: 1.02 }}
+                      className="h-16 bg-blue-200 rounded-lg flex items-center px-3 mb-1"
+                    >
+                      <span className="text-sm font-medium text-gray-800 truncate">
+                        📅 {post.header}
+                      </span>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Floating Action Buttons */}
+      <div className="absolute bottom-6 right-6 flex flex-col gap-3">
+        <motion.button
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          onClick={() => onCreateEvent && onCreateEvent(selectedDate || new Date())}
+          className="w-12 h-12 bg-white rounded-lg shadow-lg flex items-center justify-center"
+        >
+          <svg className="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+          </svg>
+        </motion.button>
+        
+        <motion.button
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          onClick={() => setIsTBAModalOpen(true)}
+          className="w-12 h-12 bg-white rounded-lg shadow-lg flex items-center justify-center"
+        >
+          <img 
+            src="/splash.png" 
+            alt="BaseTime" 
+            className="w-6 h-6 rounded"
+          />
+        </motion.button>
       </div>
 
-      {/* Event Modal */}
-      <AnimatePresence>
-        {selectedEvent && (
-          <EventModal
-            event={selectedEvent}
-            onClose={() => setSelectedEvent(null)}
-            onRSVP={onRSVP}
-            onShare={onShare}
-            hasRSVPed={userRSVPs.has(selectedEvent.id)}
-          />
-        )}
-      </AnimatePresence>
+      {/* Modals */}
+      <EventModal
+        event={selectedEvent}
+        onClose={() => setSelectedEvent(null)}
+        onRSVP={onRSVP}
+        onShare={onShare}
+        hasRSVPed={selectedEvent ? userRSVPs.has(selectedEvent.id) : false}
+      />
 
-      {/* Day Action Modal */}
       <DayActionModal
         isOpen={isDayActionModalOpen}
         onClose={() => setIsDayActionModalOpen(false)}
-        selectedDate={selectedDate!}
-        onCreateEvent={handleCreateEvent}
-        onScheduleTBA={handleScheduleTBA}
+        selectedDate={selectedDate || new Date()}
+        onCreateEvent={() => onCreateEvent && onCreateEvent(selectedDate || new Date())}
+        onScheduleTBA={() => setIsTBAModalOpen(true)}
       />
 
-      {/* TBA Post Modal */}
-      {selectedDate && (
-        <TBAPostModal
-          isOpen={isTBAModalOpen}
-          onClose={() => setIsTBAModalOpen(false)}
-          selectedDate={selectedDate}
-          onSubmit={handleTBASubmit}
-          onSchedule={handleTBASubmit}
-        />
-      )}
+      <TBAPostModal
+        isOpen={isTBAModalOpen}
+        onClose={() => setIsTBAModalOpen(false)}
+        onSubmit={handleTBASubmit}
+        selectedDate={selectedDate || new Date()}
+      />
     </div>
   );
 }

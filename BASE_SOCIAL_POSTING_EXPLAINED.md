@@ -209,3 +209,4 @@ The hard part (UI, IPFS, data collection) is done! Just need to integrate the ac
 
 
 
+

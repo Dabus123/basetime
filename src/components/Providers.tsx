@@ -21,12 +21,24 @@ export function Providers({ children }: ProvidersProps) {
   useEffect(() => {
     setMounted(true);
     
-    // Call sdk.actions.ready() to hide the loading splash screen
-    // This should be called as soon as the app is ready to be displayed
-    sdk.actions.ready().catch((error) => {
-      console.warn('Failed to call sdk.actions.ready():', error);
-      // Don't throw - this is not critical for the app to function
-    });
+    // Initialize Farcaster SDK with proper error handling
+    const initializeSDK = async () => {
+      try {
+        // Check if we're in a Mini App environment
+        if (typeof window !== 'undefined' && window.location !== window.parent.location) {
+          // We're in an iframe (Mini App environment)
+          await sdk.actions.ready();
+          console.log('✅ Farcaster SDK initialized successfully');
+        } else {
+          console.log('ℹ️ Not in Mini App environment, skipping SDK initialization');
+        }
+      } catch (error) {
+        console.warn('⚠️ Failed to initialize Farcaster SDK:', error);
+        // Don't throw - this is not critical for the app to function
+      }
+    };
+    
+    initializeSDK();
   }, []);
 
   if (!mounted) {

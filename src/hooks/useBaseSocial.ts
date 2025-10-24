@@ -46,6 +46,11 @@ export function useBaseSocial(): UseBaseSocialReturn {
         data.imageDescription
       );
       
+      // Check if SDK is available
+      if (!sdk || !sdk.actions) {
+        throw new Error('Farcaster SDK not available. Please ensure you are running in a Mini App environment.');
+      }
+      
       console.log('📝 Posting to Base social:', {
         header: data.header,
         description: data.description,
@@ -53,18 +58,77 @@ export function useBaseSocial(): UseBaseSocialReturn {
         imageHeader: data.imageHeader,
         imageDescription: data.imageDescription,
         fullText: postText,
+        hasImage: !!data.imageUrl,
+        tryingMultipleApproaches: true,
       });
       
       // Use the SDK to compose and post the cast
-      const result = await sdk.actions.composeCast({
-        text: postText,
-        embeds: [
-          {
-            url: data.imageUrl,
-          },
-        ],
-        close: false, // Keep the app open after posting
-      });
+      // Try multiple approaches for image embedding
+      let result;
+      
+      // For Mini Apps, we might need to post text only and let the Mini App's meta tags handle image display
+      // The image will be shown when the Mini App is shared, not in the post itself
+      
+      if (data.imageUrl) {
+        // Try a completely different approach - maybe Base social needs a different URL format
+        console.log('🖼️ Trying different image URL approaches...');
+        
+        // Try different URL formats that might work better with Base social
+        const imageUrl = data.imageUrl;
+        
+        // Approach 1: Try with embeds using different formats
+        try {
+          console.log('🔗 Trying embeds with IPFS URL...');
+          result = await sdk.actions.composeCast({
+            text: `${data.header}\n\n${data.description}`,
+            embeds: [{ url: imageUrl }],
+            close: false,
+          });
+          console.log('✅ Embeds with IPFS URL succeeded!');
+        } catch (embedError) {
+          console.log('❌ Embeds with IPFS URL failed:', embedError);
+          
+          // Approach 2: Try with just the URL in text (let Base social auto-detect)
+          try {
+            console.log('📝 Trying with URL in text for auto-detection...');
+            result = await sdk.actions.composeCast({
+              text: `${data.header}\n\n${data.description}\n\n${imageUrl}`,
+              close: false,
+            });
+            console.log('✅ URL in text succeeded!');
+          } catch (textError) {
+            console.log('❌ URL in text failed:', textError);
+            
+            // Approach 3: Try with a different gateway
+            try {
+              console.log('🌐 Trying with different IPFS gateway...');
+              // Convert Pinata gateway to public gateway
+              const publicGatewayUrl = imageUrl.replace('gateway.pinata.cloud', 'ipfs.io');
+              result = await sdk.actions.composeCast({
+                text: `${data.header}\n\n${data.description}\n\n${publicGatewayUrl}`,
+                close: false,
+              });
+              console.log('✅ Different gateway succeeded!');
+            } catch (gatewayError) {
+              console.log('❌ Different gateway failed:', gatewayError);
+              
+              // Final fallback: Just text without image
+              console.log('📝 Final fallback: text only');
+              result = await sdk.actions.composeCast({
+                text: `${data.header}\n\n${data.description}`,
+                close: false,
+              });
+            }
+          }
+        }
+      } else {
+        // No image, just text - use the working method
+        console.log('📝 Using text-only posting method...');
+        result = await sdk.actions.composeCast({
+          text: postText,
+          close: false,
+        });
+      }
       
       console.log('✅ Post result:', result);
       
