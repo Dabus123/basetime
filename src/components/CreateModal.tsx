@@ -33,7 +33,7 @@ const generateICS = (eventData: CreateEventData): string => {
   const foldLine = (line: string): string => {
     if (line.length <= 75) return line;
     const lines = [];
-    let currentLine = line.substring(0, 75);
+    const currentLine = line.substring(0, 75);
     lines.push(currentLine);
     
     for (let i = 75; i < line.length; i += 74) {
@@ -376,7 +376,7 @@ export function CreateModal({ isOpen, onClose, onSubmit, isLoading = false, sele
               <div className="pt-2">
                 <button
                   type="button"
-                  onClick={() => {
+                  onClick={(event) => {
                     if (formData.name && formData.startTime && formData.endTime) {
                       const icsContent = generateICS(formData);
                       const filename = `${formData.name.replace(/[^a-zA-Z0-9]/g, '_')}.ics`;

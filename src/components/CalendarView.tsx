@@ -35,7 +35,15 @@ export function CalendarView({ events, onRSVP, onShare, userRSVPs, onCreateEvent
   useEffect(() => {
     console.log('selectedEvent changed:', selectedEvent?.name || 'null');
   }, [selectedEvent]);
-  const [selectedScheduledPost, setSelectedScheduledPost] = useState<any>(null);
+  const [selectedScheduledPost, setSelectedScheduledPost] = useState<{
+    id: string;
+    header: string;
+    description: string;
+    scheduledFor: string;
+    imageId?: string;
+    image?: string;
+    status?: 'pending' | 'posted' | 'failed';
+  } | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isDayActionModalOpen, setIsDayActionModalOpen] = useState(false);
   const [isTBAModalOpen, setIsTBAModalOpen] = useState(false);
@@ -200,7 +208,15 @@ export function CalendarView({ events, onRSVP, onShare, userRSVPs, onCreateEvent
   };
 
   // Long press handlers for scheduled posts
-  const handleLongPressStart = (post: any) => {
+  const handleLongPressStart = (post: {
+    id: string;
+    header: string;
+    description: string;
+    scheduledFor: string;
+    imageId?: string;
+    image?: string;
+    status?: 'pending' | 'posted' | 'failed';
+  }) => {
     console.log('Long press started for post:', post.header); // Debug log
     setIsLongPressing(true);
     const timer = setTimeout(() => {
@@ -516,7 +532,11 @@ export function CalendarView({ events, onRSVP, onShare, userRSVPs, onCreateEvent
                         onClick={(e) => {
                           e.stopPropagation();
                           console.log('Scheduled post clicked:', post.header); // Debug log
-                          setSelectedScheduledPost(post);
+                          setSelectedScheduledPost({
+                            ...post,
+                            scheduledFor: post.scheduledFor.toISOString(),
+                            status: post.status === 'cancelled' ? 'failed' : post.status
+                          });
                         }}
                         className="h-16 bg-blue-200 rounded-lg flex items-center px-3 mb-1 cursor-pointer hover:bg-blue-300 transition-colors"
                       >

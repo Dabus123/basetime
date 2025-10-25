@@ -92,7 +92,7 @@ export function useBaseSocial(): UseBaseSocialReturn {
           try {
             result = await sdk.actions.composeCast({
               text: `${data.header}\n\n${data.description}`,
-              embeds: [{ url: imageUrl }],
+              embeds: [imageUrl],
               close: false,
             });
             console.log('✅ Embed object format succeeded!');
