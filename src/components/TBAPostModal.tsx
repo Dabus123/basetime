@@ -360,7 +360,7 @@ export function TBAPostModal({
                   <div className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-3">
                     <PhotoIcon className="w-4 h-4 text-gray-500" />
                     Optional Image
-                    <span className="text-xs text-gray-400 ml-auto">(Currently not supported in Base social)</span>
+                    <span className="text-xs text-gray-400 ml-auto">(Currently not supported in Base social -please help base god)</span>
                   </div>
                   
                   {/* Compact File Input */}
@@ -441,34 +441,14 @@ export function TBAPostModal({
                     Cancel
                   </motion.button>
                   
-                  <div className="flex items-center gap-3">
-                    <motion.button
-                      type="button"
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={handlePostNow}
-                      disabled={!isFormValid() || isSubmitting || isPostingNow || isPosting}
-                      className="px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all duration-200 font-medium shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                    >
-                      {(isPostingNow || isPosting) ? (
-                        <>
-                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                          {isPosting ? 'Confirming...' : 'Posting...'}
-                        </>
-                      ) : (
-                        <>
-                          <ArrowUpTrayIcon className="w-5 h-5" />
-                          Post Now
-                        </>
-                      )}
-                    </motion.button>
-                    
+                  <div className="flex flex-col gap-3">
+                    {/* Schedule Post Button - Centered */}
                     <motion.button
                       type="submit"
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       disabled={!isFormValid() || isSubmitting || isPostingNow}
-                      className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-200 font-medium shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                      className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
                       {isSubmitting ? (
                         <>

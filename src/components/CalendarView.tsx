@@ -7,6 +7,7 @@ import { Event } from '@/types';
 import { EventModal } from './EventModal';
 import { DayActionModal } from './DayActionModal';
 import { TBAPostModal, TBAPostData } from './TBAPostModal';
+import { ScheduledPostModal } from './ScheduledPostModal';
 import { useScheduledPosts } from '@/hooks/useScheduledPosts';
 import { useBaseSocial } from '@/hooks/useBaseSocial';
 
@@ -28,6 +29,7 @@ interface CalendarDay {
 export function CalendarView({ events, onRSVP, onShare, userRSVPs, onCreateEvent }: CalendarViewProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [selectedScheduledPost, setSelectedScheduledPost] = useState<any>(null);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isDayActionModalOpen, setIsDayActionModalOpen] = useState(false);
   const [isTBAModalOpen, setIsTBAModalOpen] = useState(false);
@@ -37,6 +39,8 @@ export function CalendarView({ events, onRSVP, onShare, userRSVPs, onCreateEvent
   const [animationDirection, setAnimationDirection] = useState<'left' | 'right' | null>(null);
   const [showTimelineView, setShowTimelineView] = useState(false);
   const [selectedTimeslot, setSelectedTimeslot] = useState<number | null>(null);
+  const [longPressTimer, setLongPressTimer] = useState<NodeJS.Timeout | null>(null);
+  const [isLongPressing, setIsLongPressing] = useState(false);
   
   // Scheduling hooks
   const { addScheduledPost, getDuePosts, updatePostStatus, getPendingPosts } = useScheduledPosts();
@@ -187,6 +191,28 @@ export function CalendarView({ events, onRSVP, onShare, userRSVPs, onCreateEvent
       setShowTimelineView(false);
       setSelectedTimeslot(null);
     }
+  };
+
+  // Long press handlers for scheduled posts
+  const handleLongPressStart = (post: any) => {
+    console.log('Long press started for post:', post.header); // Debug log
+    setIsLongPressing(true);
+    const timer = setTimeout(() => {
+      console.log('Long press completed for post:', post.header); // Debug log
+      // Show scheduled post details in a modal or alert
+      alert(`Scheduled Post:\n\nTitle: ${post.header}\nDescription: ${post.description}\nScheduled for: ${new Date(post.scheduledFor).toLocaleString()}`);
+      setIsLongPressing(false);
+    }, 500); // 500ms for long press
+    setLongPressTimer(timer);
+  };
+
+  const handleLongPressEnd = () => {
+    console.log('Long press ended'); // Debug log
+    if (longPressTimer) {
+      clearTimeout(longPressTimer);
+      setLongPressTimer(null);
+    }
+    setIsLongPressing(false);
   };
 
   const monthNames = [
@@ -457,22 +483,35 @@ export function CalendarView({ events, onRSVP, onShare, userRSVPs, onCreateEvent
                   ))}
                   
                   {/* Scheduled posts */}
-                  {getPendingPosts().filter(post => {
-                    const postDate = new Date(post.scheduledFor);
-                    const targetDate = selectedDate || new Date();
-                    return postDate.toDateString() === targetDate.toDateString() && 
-                           postDate.getHours() === hour;
-                  }).map((post, index) => (
-                    <motion.div
-                      key={post.id}
-                      whileHover={{ scale: 1.02 }}
-                      className="h-16 bg-blue-200 rounded-lg flex items-center px-3 mb-1"
-                    >
-                      <span className="text-sm font-medium text-gray-800 truncate">
-                        📅 {post.header}
-                      </span>
-                    </motion.div>
-                  ))}
+                  {(() => {
+                    const allPosts = getPendingPosts();
+                    const filteredPosts = allPosts.filter(post => {
+                      const postDate = new Date(post.scheduledFor);
+                      const targetDate = selectedDate || new Date();
+                      return postDate.toDateString() === targetDate.toDateString() && 
+                             postDate.getHours() === hour;
+                    });
+                    console.log('All pending posts:', allPosts.length, 'Filtered posts for hour', hour, ':', filteredPosts.length);
+                    return filteredPosts;
+                  })().map((post, index) => {
+                    console.log('Rendering scheduled post:', post.header, 'at hour:', hour); // Debug log
+                    return (
+                      <motion.div
+                        key={post.id}
+                        whileHover={{ scale: 1.02 }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          console.log('Scheduled post clicked:', post.header); // Debug log
+                          setSelectedScheduledPost(post);
+                        }}
+                        className="h-16 bg-blue-200 rounded-lg flex items-center px-3 mb-1 cursor-pointer hover:bg-blue-300 transition-colors"
+                      >
+                        <span className="text-sm font-medium text-gray-800 truncate">
+                          📅 {post.header}
+                        </span>
+                      </motion.div>
+                    );
+                  })}
                 </div>
               </div>
             ))}
@@ -552,6 +591,15 @@ export function CalendarView({ events, onRSVP, onShare, userRSVPs, onCreateEvent
         onSubmit={handleTBASubmit}
         selectedDate={selectedDate || new Date()}
         selectedTimeslot={selectedTimeslot}
+      />
+
+      <ScheduledPostModal
+        post={selectedScheduledPost}
+        onClose={() => setSelectedScheduledPost(null)}
+        onDelete={(postId) => {
+          // TODO: Implement delete functionality
+          console.log('Delete scheduled post:', postId);
+        }}
       />
     </div>
   );
