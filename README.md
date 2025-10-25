@@ -4,7 +4,7 @@ BaseTime is the everything planner that lets users view, create, and share event
 
 ## 🎬 Demo Video
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/dCyYsWblVTg" title="BaseTime Demo Video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+[![BaseTime - The Everything Planner Demo Video](https://img.youtube.com/vi/dCyYsWblVTg/0.jpg)](https://www.youtube.com/watch?v=dCyYsWblVTg)
 
 *Watch the BaseTime pitch video to see the app in action!*
 
