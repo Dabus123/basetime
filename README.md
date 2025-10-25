@@ -4,7 +4,7 @@ BaseTime is a social onchain calendar that lets users view, create, and share ev
 
 ## 🎬 Demo Video
 
-https://github.com/Dabus123/basetime/assets/BaseTimePitch4to3.mp4
+[![BaseTime Demo Video](https://img.youtube.com/vi/dCyYsWblVTg/maxresdefault.jpg)](https://youtu.be/dCyYsWblVTg)
 
 *Watch the BaseTime pitch video to see the app in action!*
 
