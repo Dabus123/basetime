@@ -442,7 +442,7 @@ export function TBAPostModal({
                   </motion.button>
                   
                   <div className="flex flex-col gap-3">
-                    {/* Schedule Post Button - Centered */}
+                    {/* Schedule Post Button - Centered (Post Now button removed) */}
                     <motion.button
                       type="submit"
                       whileHover={{ scale: 1.02 }}
