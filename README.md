@@ -1,10 +1,10 @@
-# BaseTime - Onchain Social Calendar
+# BaseTime - The Everything Planner
 
-BaseTime is a social onchain calendar that lets users view, create, and share events in the Base ecosystem. RSVP to events and mint Event Pass NFTs as proof of attendance.
+BaseTime is the everything planner that lets users view, create, and share events in the Base ecosystem. RSVP to events and mint Event Pass NFTs as proof of attendance.
 
 ## 🎬 Demo Video
 
-[![BaseTime Demo Video](https://img.youtube.com/vi/dCyYsWblVTg/maxresdefault.jpg)](https://youtu.be/dCyYsWblVTg)
+<iframe width="560" height="315" src="https://www.youtube.com/embed/dCyYsWblVTg" title="BaseTime Demo Video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
 
 *Watch the BaseTime pitch video to see the app in action!*
 
