@@ -18,13 +18,17 @@ export function EventModal({ event, onClose, onRSVP, onShare, hasRSVPed }: Event
   const [isVisible, setIsVisible] = useState(false);
   
   useEffect(() => {
-    setIsVisible(true);
-    // Prevent body scroll when modal is open
-    document.body.style.overflow = 'hidden';
+    if (event) {
+      setIsVisible(true);
+      // Prevent body scroll when modal is open
+      document.body.style.overflow = 'hidden';
+    } else {
+      setIsVisible(false);
+    }
     return () => {
       document.body.style.overflow = 'unset';
     };
-  }, []);
+  }, [event]);
   
   // Don't render if no event is provided
   if (!event) {
@@ -53,7 +57,7 @@ export function EventModal({ event, onClose, onRSVP, onShare, hasRSVPed }: Event
         animate={{ opacity: isVisible ? 1 : 0 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
-        className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+        className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center p-4 z-[60]"
         onClick={handleClose}
       >
         <motion.div

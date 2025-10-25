@@ -27,8 +27,14 @@ interface CalendarDay {
 }
 
 export function CalendarView({ events, onRSVP, onShare, userRSVPs, onCreateEvent }: CalendarViewProps) {
+  console.log('CalendarView received events:', events.length); // Debug log
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  
+  // Debug selectedEvent changes
+  useEffect(() => {
+    console.log('selectedEvent changed:', selectedEvent?.name || 'null');
+  }, [selectedEvent]);
   const [selectedScheduledPost, setSelectedScheduledPost] = useState<any>(null);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isDayActionModalOpen, setIsDayActionModalOpen] = useState(false);
@@ -466,21 +472,29 @@ export function CalendarView({ events, onRSVP, onShare, userRSVPs, onCreateEvent
                   onClick={() => setSelectedTimeslot(hour)}
                 >
                   {/* Regular events */}
-                  {getEventsForTimeSlot(hour).map((event, index) => (
-                    <motion.div
-                      key={event.id}
-                      whileHover={{ scale: 1.02 }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedEvent(event);
-                      }}
-                      className="h-16 bg-blue-200 rounded-lg flex items-center px-3 mb-1 cursor-pointer"
-                    >
-                      <span className="text-sm font-medium text-gray-800 truncate">
-                        {event.name}
-                      </span>
-                    </motion.div>
-                  ))}
+                  {(() => {
+                    const eventsForHour = getEventsForTimeSlot(hour);
+                    console.log('Events for hour', hour, ':', eventsForHour.length);
+                    return eventsForHour.map((event, index) => {
+                      console.log('Rendering event:', event.name, 'at hour:', hour);
+                      return (
+                        <motion.div
+                          key={event.id}
+                          whileHover={{ scale: 1.02 }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            console.log('Event clicked:', event.name);
+                            setSelectedEvent(event);
+                          }}
+                          className="h-16 bg-blue-200 rounded-lg flex items-center px-3 mb-1 cursor-pointer hover:bg-blue-300 transition-colors"
+                        >
+                          <span className="text-sm font-medium text-gray-800 truncate">
+                            {event.name}
+                          </span>
+                        </motion.div>
+                      );
+                    });
+                  })()}
                   
                   {/* Scheduled posts */}
                   {(() => {
