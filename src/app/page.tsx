@@ -18,6 +18,7 @@ export default function HomePage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedEndDate, setSelectedEndDate] = useState<Date | null>(null);
   const [showNotification, setShowNotification] = useState(false);
   const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
@@ -47,8 +48,9 @@ export default function HomePage() {
     }
   }, [isSuccess, refreshEvents]);
 
-  const handleDateSelect = (date: Date) => {
-    setSelectedDate(date);
+  const handleDateSelect = (startDate: Date, endDate?: Date) => {
+    setSelectedDate(startDate);
+    setSelectedEndDate(endDate || null);
     setIsCreateModalOpen(true);
   };
 
@@ -241,10 +243,12 @@ export default function HomePage() {
         onClose={() => {
           setIsCreateModalOpen(false);
           setSelectedDate(null);
+          setSelectedEndDate(null);
         }}
         onSubmit={handleCreateEvent}
         isLoading={isCreating || isPending}
         selectedDate={selectedDate}
+        selectedEndDate={selectedEndDate}
       />
     </motion.div>
   );

@@ -11,9 +11,10 @@ interface CreateModalProps {
   onSubmit: (eventData: CreateEventData) => void;
   isLoading?: boolean;
   selectedDate?: Date | null;
+  selectedEndDate?: Date | null;
 }
 
-export function CreateModal({ isOpen, onClose, onSubmit, isLoading = false, selectedDate }: CreateModalProps) {
+export function CreateModal({ isOpen, onClose, onSubmit, isLoading = false, selectedDate, selectedEndDate }: CreateModalProps) {
   const [formData, setFormData] = useState<CreateEventData>({
     name: '',
     description: '',
@@ -31,10 +32,10 @@ export function CreateModal({ isOpen, onClose, onSubmit, isLoading = false, sele
       setFormData(prev => ({
         ...prev,
         startTime: dateStr,
-        endTime: dateStr,
+        endTime: selectedEndDate ? selectedEndDate.toISOString().slice(0, 16) : dateStr,
       }));
     }
-  }, [selectedDate]);
+  }, [selectedDate, selectedEndDate]);
 
   const [errors, setErrors] = useState<Partial<CreateEventData>>({});
 
@@ -138,13 +139,13 @@ export function CreateModal({ isOpen, onClose, onSubmit, isLoading = false, sele
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <h2 className="text-xl font-semibold text-gray-900 font-display">Create Event</h2>
+            <div className="flex items-center justify-between p-6 bg-blue-600 text-white rounded-t-xl">
+              <h2 className="text-xl font-semibold font-display">Create Event</h2>
               <button
                 onClick={handleClose}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 hover:bg-blue-700 rounded-lg transition-colors"
               >
-                <XMarkIcon className="w-5 h-5 text-gray-500" />
+                <XMarkIcon className="w-5 h-5 text-white" />
               </button>
             </div>
 

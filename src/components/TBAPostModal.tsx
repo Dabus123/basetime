@@ -17,6 +17,7 @@ interface TBAPostModalProps {
   isOpen: boolean;
   onClose: () => void;
   selectedDate: Date;
+  selectedTimeslot?: number | null;
   onSubmit: (data: TBAPostData) => void;
   onSchedule?: (data: TBAPostData, scheduledFor: Date) => void;
 }
@@ -25,8 +26,9 @@ export function TBAPostModal({
   isOpen, 
   onClose, 
   selectedDate,
-  onSubmit,
-  onSchedule
+  selectedTimeslot,
+  onSubmit, 
+  onSchedule 
 }: TBAPostModalProps) {
   const [formData, setFormData] = useState<TBAPostData>({
     header: '',
@@ -36,7 +38,13 @@ export function TBAPostModal({
     imageDescription: '',
   });
   
-  const [selectedTime, setSelectedTime] = useState('14:00'); // Default to 2 PM
+  const [selectedTime, setSelectedTime] = useState(() => {
+    // If a timeslot is selected, use that time; otherwise default to 2 PM
+    if (selectedTimeslot !== null && selectedTimeslot !== undefined) {
+      return `${String(selectedTimeslot).padStart(2, '0')}:00`;
+    }
+    return '14:00'; // Default to 2 PM
+  });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isPostingNow, setIsPostingNow] = useState(false);

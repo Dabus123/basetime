@@ -68,6 +68,9 @@ export function EventFeed({
     return a.startTime - b.startTime;
   });
 
+  // Debug: Check for duplicate events
+  console.log('EventFeed - sortedEvents:', sortedEvents.map(e => ({ id: e.id, name: e.name })));
+
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -89,9 +92,8 @@ export function EventFeed({
   return (
     <div className="flex flex-col h-full">
       {/* Header Controls */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 px-4 pt-4 flex-shrink-0">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 px-4 pt-4 pb-2 flex-shrink-0">
         <div className="min-w-0 flex-1">
-          <h2 className="text-2xl font-bold text-blue-900 truncate">Events</h2>
           <p className="text-blue-700">{sortedEvents.length} events found</p>
         </div>
 
@@ -178,9 +180,9 @@ export function EventFeed({
           <>
             {viewMode === 'list' ? (
               <div className="space-y-4">
-                {sortedEvents.map((event) => (
+                {sortedEvents.map((event, index) => (
                   <EventCard
-                    key={event.id}
+                    key={`${event.id}-${index}`}
                     event={event}
                     onRSVP={onRSVP}
                     onShare={onShare}

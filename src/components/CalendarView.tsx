@@ -15,7 +15,7 @@ interface CalendarViewProps {
   onRSVP: (eventId: number) => void;
   onShare: (event: Event) => void;
   userRSVPs: Set<number>;
-  onCreateEvent?: (date: Date) => void;
+  onCreateEvent?: (startDate: Date, endDate?: Date) => void;
 }
 
 interface CalendarDay {
@@ -36,6 +36,7 @@ export function CalendarView({ events, onRSVP, onShare, userRSVPs, onCreateEvent
   const [isAnimating, setIsAnimating] = useState(false);
   const [animationDirection, setAnimationDirection] = useState<'left' | 'right' | null>(null);
   const [showTimelineView, setShowTimelineView] = useState(false);
+  const [selectedTimeslot, setSelectedTimeslot] = useState<number | null>(null);
   
   // Scheduling hooks
   const { addScheduledPost, getDuePosts, updatePostStatus, getPendingPosts } = useScheduledPosts();
@@ -162,6 +163,29 @@ export function CalendarView({ events, onRSVP, onShare, userRSVPs, onCreateEvent
         setIsAnimating(false);
         setAnimationDirection(null);
       }, 150);
+    }
+  };
+
+  // Timeline touch handlers for swipe to go back
+  const handleTimelineTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTimelineTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTimelineTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const isRightSwipe = distance < -50; // Swipe from left to right
+
+    if (isRightSwipe) {
+      // Swipe right - go back to main calendar
+      setShowTimelineView(false);
+      setSelectedTimeslot(null);
     }
   };
 
@@ -310,6 +334,7 @@ export function CalendarView({ events, onRSVP, onShare, userRSVPs, onCreateEvent
           <div className="grid grid-cols-7 gap-1">
             {calendarDays.map((day, index) => {
               const isSelected = selectedDate && day.date.toDateString() === selectedDate.toDateString();
+              const isPastDay = day.date < new Date(new Date().setHours(0, 0, 0, 0)); // Check if day is before today
               
               return (
                 <motion.div
@@ -323,16 +348,24 @@ export function CalendarView({ events, onRSVP, onShare, userRSVPs, onCreateEvent
                         ? 'bg-blue-600 text-white' 
                         : isSelected
                         ? 'bg-blue-100 text-blue-900 border-2 border-blue-300'
+                        : isPastDay
+                        ? 'text-gray-400 hover:bg-gray-50'
                         : 'text-gray-900 hover:bg-gray-100'
+                      : isPastDay
+                      ? 'text-gray-300'
                       : 'text-gray-300'
                   }`}
                 >
                   <span>{day.date.getDate()}</span>
                   {day.events.length > 0 && (
-                    <div className="w-1 h-1 bg-blue-500 rounded-full mt-1"></div>
+                    <div className={`w-1 h-1 rounded-full mt-1 ${
+                      isPastDay ? 'bg-gray-400' : 'bg-blue-500'
+                    }`}></div>
                   )}
                   {getScheduledPostsForDate(day.date).length > 0 && (
-                    <div className="w-1 h-1 bg-blue-500 rounded-full mt-1"></div>
+                    <div className={`w-1 h-1 rounded-full mt-1 ${
+                      isPastDay ? 'bg-gray-400' : 'bg-blue-500'
+                    }`}></div>
                   )}
                 </motion.div>
               );
@@ -354,13 +387,19 @@ export function CalendarView({ events, onRSVP, onShare, userRSVPs, onCreateEvent
           damping: 25,
           stiffness: 200
         }}
+        onTouchStart={handleTimelineTouchStart}
+        onTouchMove={handleTimelineTouchMove}
+        onTouchEnd={handleTimelineTouchEnd}
       >
         {/* Timeline Header */}
         <div className="bg-blue-600 text-white px-4 py-3 flex items-center justify-between flex-shrink-0">
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => setShowTimelineView(false)}
+            onClick={() => {
+              setShowTimelineView(false);
+              setSelectedTimeslot(null); // Reset timeslot selection when closing timeline
+            }}
             className="p-1"
           >
             <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
@@ -392,13 +431,23 @@ export function CalendarView({ events, onRSVP, onShare, userRSVPs, onCreateEvent
                 </div>
                 
                 {/* Events area */}
-                <div className="flex-1 relative px-4 py-2">
+                <div 
+                  className={`flex-1 relative px-4 py-2 cursor-pointer transition-colors ${
+                    selectedTimeslot === hour 
+                      ? 'bg-blue-50 border-2 border-blue-300 rounded-lg' 
+                      : 'hover:bg-gray-50'
+                  }`}
+                  onClick={() => setSelectedTimeslot(hour)}
+                >
                   {/* Regular events */}
                   {getEventsForTimeSlot(hour).map((event, index) => (
                     <motion.div
                       key={event.id}
                       whileHover={{ scale: 1.02 }}
-                      onClick={() => setSelectedEvent(event)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedEvent(event);
+                      }}
                       className="h-16 bg-blue-200 rounded-lg flex items-center px-3 mb-1 cursor-pointer"
                     >
                       <span className="text-sm font-medium text-gray-800 truncate">
@@ -436,10 +485,32 @@ export function CalendarView({ events, onRSVP, onShare, userRSVPs, onCreateEvent
         <motion.button
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
-          onClick={() => onCreateEvent && onCreateEvent(selectedDate || new Date())}
-          className="w-16 h-16 bg-white rounded-xl shadow-lg flex items-center justify-center"
+          onClick={() => {
+            if (showTimelineView && selectedTimeslot !== null && onCreateEvent) {
+              // Timeline view: use selected timeslot with start and end times
+              const eventDate = selectedDate || new Date();
+              const startTime = new Date(eventDate);
+              startTime.setHours(selectedTimeslot, 0, 0, 0);
+              const endTime = new Date(eventDate);
+              endTime.setHours(selectedTimeslot + 1, 0, 0, 0); // 1 hour duration
+              onCreateEvent(startTime, endTime);
+              setSelectedTimeslot(null); // Reset selection after creating event
+            } else if (!showTimelineView && onCreateEvent) {
+              // Main calendar view: use selected date or today
+              onCreateEvent(selectedDate || new Date());
+            }
+          }}
+          className={`w-16 h-16 rounded-xl shadow-lg flex items-center justify-center transition-all duration-300 ${
+            (showTimelineView && selectedTimeslot !== null) || (!showTimelineView)
+              ? 'bg-blue-500 shadow-blue-500/50 shadow-xl' 
+              : 'bg-white'
+          }`}
         >
-          <svg className="w-8 h-8 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+          <svg className={`w-8 h-8 transition-colors ${
+            (showTimelineView && selectedTimeslot !== null) || (!showTimelineView)
+              ? 'text-white' 
+              : 'text-blue-600'
+          }`} fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
           </svg>
         </motion.button>
@@ -480,6 +551,7 @@ export function CalendarView({ events, onRSVP, onShare, userRSVPs, onCreateEvent
         onClose={() => setIsTBAModalOpen(false)}
         onSubmit={handleTBASubmit}
         selectedDate={selectedDate || new Date()}
+        selectedTimeslot={selectedTimeslot}
       />
     </div>
   );
