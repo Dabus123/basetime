@@ -87,7 +87,7 @@ export function EventFeed({
   }
 
   return (
-    <div className="space-y-6 h-full overflow-hidden">
+    <div className="flex flex-col h-full">
       {/* Header Controls */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 px-4 pt-4 flex-shrink-0">
         <div className="min-w-0 flex-1">

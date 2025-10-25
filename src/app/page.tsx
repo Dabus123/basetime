@@ -79,7 +79,7 @@ export default function HomePage() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="h-screen bg-white flex flex-col overflow-hidden"
+      className="h-screen bg-white flex flex-col overflow-hidden fixed inset-0"
     >
             {/* Mobile Header */}
             <motion.header

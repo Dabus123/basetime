@@ -254,7 +254,7 @@ export function CalendarView({ events, onRSVP, onShare, userRSVPs, onCreateEvent
       >
         {/* Calendar Grid */}
       <div 
-        className="bg-white border-b border-gray-200 relative overflow-hidden flex-shrink-0 h-80"
+        className="bg-white border-b border-gray-200 relative overflow-hidden flex-shrink-0 h-96"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -432,14 +432,14 @@ export function CalendarView({ events, onRSVP, onShare, userRSVPs, onCreateEvent
       </motion.div>
 
       {/* Floating Action Buttons */}
-      <div className="absolute bottom-6 right-6 flex flex-col gap-3">
+      <div className="absolute bottom-6 right-6 flex flex-col gap-4">
         <motion.button
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
           onClick={() => onCreateEvent && onCreateEvent(selectedDate || new Date())}
-          className="w-12 h-12 bg-white rounded-lg shadow-lg flex items-center justify-center"
+          className="w-16 h-16 bg-white rounded-xl shadow-lg flex items-center justify-center"
         >
-          <svg className="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+          <svg className="w-8 h-8 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
           </svg>
         </motion.button>
@@ -448,12 +448,12 @@ export function CalendarView({ events, onRSVP, onShare, userRSVPs, onCreateEvent
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
           onClick={() => setIsTBAModalOpen(true)}
-          className="w-12 h-12 bg-white rounded-lg shadow-lg flex items-center justify-center"
+          className="w-16 h-16 bg-white rounded-xl shadow-lg flex items-center justify-center"
         >
           <img 
             src="/splash.png" 
             alt="BaseTime" 
-            className="w-6 h-6 rounded"
+            className="w-8 h-8 rounded"
           />
         </motion.button>
       </div>
