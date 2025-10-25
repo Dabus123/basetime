@@ -76,6 +76,17 @@ export default function HomePage() {
     }
   };
 
+  // Get next 2 upcoming events
+  const getUpcomingEvents = () => {
+    const now = Math.floor(Date.now() / 1000);
+    return events
+      .filter(event => event.startTime > now)
+      .sort((a, b) => a.startTime - b.startTime)
+      .slice(0, 2);
+  };
+
+  const upcomingEvents = getUpcomingEvents();
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -117,13 +128,69 @@ export default function HomePage() {
               {/* Calendar or List View */}
               <div className="flex-1 overflow-hidden">
                 {viewMode === 'calendar' ? (
-                  <CalendarView
-                    events={events}
-                    onRSVP={handleRSVP}
-                    onShare={handleShare}
-                    userRSVPs={userRSVPs}
-                    onCreateEvent={handleDateSelect}
-                  />
+                  <>
+                    <CalendarView
+                      events={events}
+                      onRSVP={handleRSVP}
+                      onShare={handleShare}
+                      userRSVPs={userRSVPs}
+                      onCreateEvent={handleDateSelect}
+                    />
+                    
+                    {/* Upcoming Events Section */}
+                    {upcomingEvents.length > 0 && (
+                      <div className="bg-gray-50 border-t border-gray-200 p-4 flex-shrink-0">
+                        <h3 className="text-sm font-semibold text-gray-700 mb-3">Next Upcoming Events</h3>
+                        <div className="space-y-2">
+                          {upcomingEvents.map((event) => (
+                            <div
+                              key={event.id}
+                              className="bg-white rounded-lg p-3 border border-gray-200 hover:shadow-sm transition-shadow cursor-pointer"
+                              onClick={() => {
+                                // You could add a click handler here to show event details
+                                console.log('Event clicked:', event);
+                              }}
+                            >
+                              <div className="flex items-center justify-between">
+                                <div className="flex-1 min-w-0">
+                                  <h4 className="text-sm font-medium text-gray-900 truncate">
+                                    {event.name}
+                                  </h4>
+                                  <p className="text-xs text-gray-500 mt-1">
+                                    {new Date(event.startTime * 1000).toLocaleDateString('en-US', {
+                                      weekday: 'short',
+                                      month: 'short',
+                                      day: 'numeric',
+                                      hour: '2-digit',
+                                      minute: '2-digit'
+                                    })}
+                                  </p>
+                                </div>
+                                <div className="flex items-center gap-2 ml-2">
+                                  <span className="text-xs text-gray-400">
+                                    {event.rsvpCount} RSVPs
+                                  </span>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleRSVP(event.id);
+                                    }}
+                                    className={`px-2 py-1 text-xs rounded-full transition-colors ${
+                                      userRSVPs.has(event.id)
+                                        ? 'bg-blue-100 text-blue-700'
+                                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                    }`}
+                                  >
+                                    {userRSVPs.has(event.id) ? 'RSVPed' : 'RSVP'}
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </>
                 ) : (
                   <div className="h-full overflow-hidden">
                     <EventFeed

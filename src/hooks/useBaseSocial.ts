@@ -86,38 +86,50 @@ export function useBaseSocial(): UseBaseSocialReturn {
           });
           console.log('✅ Embeds with IPFS URL succeeded!');
         } catch (embedError) {
-          console.log('❌ Embeds with IPFS URL failed:', embedError);
+          console.log('❌ Direct URL embed failed, trying embed object format...');
           
-          // Approach 2: Try with just the URL in text (let Base social auto-detect)
+          // Try embed object format
           try {
-            console.log('📝 Trying with URL in text for auto-detection...');
             result = await sdk.actions.composeCast({
-              text: `${data.header}\n\n${data.description}\n\n${imageUrl}`,
+              text: `${data.header}\n\n${data.description}`,
+              embeds: [{ url: imageUrl }],
               close: false,
             });
-            console.log('✅ URL in text succeeded!');
-          } catch (textError) {
-            console.log('❌ URL in text failed:', textError);
+            console.log('✅ Embed object format succeeded!');
+          } catch (embedObjectError) {
+            console.log('❌ Embed object format failed:', embedObjectError);
             
-            // Approach 3: Try with a different gateway
+            // Approach 2: Try with just the URL in text (let Base social auto-detect)
             try {
-              console.log('🌐 Trying with different IPFS gateway...');
-              // Convert Pinata gateway to public gateway
-              const publicGatewayUrl = imageUrl.replace('gateway.pinata.cloud', 'ipfs.io');
+              console.log('📝 Trying with URL in text for auto-detection...');
               result = await sdk.actions.composeCast({
-                text: `${data.header}\n\n${data.description}\n\n${publicGatewayUrl}`,
+                text: `${data.header}\n\n${data.description}\n\n${imageUrl}`,
                 close: false,
               });
-              console.log('✅ Different gateway succeeded!');
-            } catch (gatewayError) {
-              console.log('❌ Different gateway failed:', gatewayError);
+              console.log('✅ URL in text succeeded!');
+            } catch (textError) {
+              console.log('❌ URL in text failed:', textError);
               
-              // Final fallback: Just text without image
-              console.log('📝 Final fallback: text only');
-              result = await sdk.actions.composeCast({
-                text: `${data.header}\n\n${data.description}`,
-                close: false,
-              });
+              // Approach 3: Try with a different gateway
+              try {
+                console.log('🌐 Trying with different IPFS gateway...');
+                // Convert Pinata gateway to public gateway
+                const publicGatewayUrl = imageUrl.replace('gateway.pinata.cloud', 'ipfs.io');
+                result = await sdk.actions.composeCast({
+                  text: `${data.header}\n\n${data.description}\n\n${publicGatewayUrl}`,
+                  close: false,
+                });
+                console.log('✅ Different gateway succeeded!');
+              } catch (gatewayError) {
+                console.log('❌ Different gateway failed:', gatewayError);
+                
+                // Final fallback: Just text without image
+                console.log('📝 Final fallback: text only');
+                result = await sdk.actions.composeCast({
+                  text: `${data.header}\n\n${data.description}`,
+                  close: false,
+                });
+              }
             }
           }
         }

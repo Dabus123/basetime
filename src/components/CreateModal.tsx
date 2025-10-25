@@ -5,6 +5,101 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { CreateEventData } from '@/types';
 
+// Utility function to generate .ics content
+const generateICS = (eventData: CreateEventData): string => {
+  const startDate = new Date(eventData.startTime);
+  const endDate = new Date(eventData.endTime);
+  
+  // Format dates for ICS (YYYYMMDDTHHMMSSZ) - UTC format
+  const formatICSDate = (date: Date): string => {
+    return date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+  };
+  
+  // Generate unique UID
+  const uid = `event-${Date.now()}-${Math.random().toString(36).substr(2, 9)}@basetime.app`;
+  const now = new Date();
+  
+  // Escape special characters for ICS format
+  const escapeICS = (text: string): string => {
+    return text
+      .replace(/\\/g, '\\\\')
+      .replace(/;/g, '\\;')
+      .replace(/,/g, '\\,')
+      .replace(/\n/g, '\\n')
+      .replace(/\r/g, '');
+  };
+  
+  // Build ICS content with proper line folding (max 75 chars per line)
+  const foldLine = (line: string): string => {
+    if (line.length <= 75) return line;
+    const lines = [];
+    let currentLine = line.substring(0, 75);
+    lines.push(currentLine);
+    
+    for (let i = 75; i < line.length; i += 74) {
+      const nextLine = ' ' + line.substring(i, i + 74);
+      lines.push(nextLine);
+    }
+    
+    return lines.join('\r\n');
+  };
+  
+  const lines = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//BaseTime//Event Calendar//EN',
+    'CALSCALE:GREGORIAN',
+    'METHOD:PUBLISH',
+    'BEGIN:VEVENT',
+    `UID:${uid}`,
+    `DTSTAMP:${formatICSDate(now)}`,
+    `DTSTART:${formatICSDate(startDate)}`,
+    `DTEND:${formatICSDate(endDate)}`,
+    `SUMMARY:${escapeICS(eventData.name)}`,
+    `DESCRIPTION:${escapeICS(eventData.description)}`,
+    'STATUS:CONFIRMED',
+    'TRANSP:OPAQUE',
+    'CLASS:PUBLIC'
+  ];
+  
+  // Add optional fields
+  if (eventData.image) {
+    lines.push(`URL:${eventData.image}`);
+  }
+  if (eventData.onchainAction) {
+    lines.push(`URL:${eventData.onchainAction}`);
+  }
+  
+  lines.push('END:VEVENT');
+  lines.push('END:VCALENDAR');
+  
+  // Apply line folding and join with CRLF
+  return lines.map(foldLine).join('\r\n');
+};
+
+// Utility function to download .ics file
+const downloadICS = (content: string, filename: string) => {
+  // Create blob with proper MIME type for calendar files
+  const blob = new Blob([content], { 
+    type: 'text/calendar;charset=utf-8'
+  });
+  
+  // Simple download approach that works reliably
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  link.style.display = 'none';
+  
+  // Add to DOM, click, and remove
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  
+  // Clean up the URL object
+  setTimeout(() => URL.revokeObjectURL(url), 100);
+};
+
 interface CreateModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -275,6 +370,42 @@ export function CreateModal({ isOpen, onClose, onSubmit, isLoading = false, sele
                 <label htmlFor="isPublic" className="ml-2 block text-sm text-gray-700">
                   Make this a public event
                 </label>
+              </div>
+
+              {/* Export .ics Button */}
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (formData.name && formData.startTime && formData.endTime) {
+                      const icsContent = generateICS(formData);
+                      const filename = `${formData.name.replace(/[^a-zA-Z0-9]/g, '_')}.ics`;
+                      
+                      // Show a brief notification
+                      const button = event.target as HTMLButtonElement;
+                      const originalText = button.textContent;
+                      button.textContent = 'Downloading...';
+                      button.disabled = true;
+                      
+                      setTimeout(() => {
+                        button.textContent = originalText;
+                        button.disabled = false;
+                      }, 1500);
+                      
+                      downloadICS(icsContent, filename);
+                    }
+                  }}
+                  disabled={!formData.name || !formData.startTime || !formData.endTime}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+                >
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                  Export as .ics
+                </button>
+                <p className="text-xs text-gray-500 mt-1 text-center">
+                  Download calendar file for Google Calendar, Outlook, etc.
+                </p>
               </div>
 
               {/* Submit Button */}
