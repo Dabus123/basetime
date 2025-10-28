@@ -81,9 +81,9 @@ export function createCastWithImage(text: string, imageUrl: string): CastData {
 export function formatPostForBaseSocial(
   header: string,
   description: string,
-  imageUrl: string,
-  imageHeader: string,
-  imageDescription: string
+  imageUrl?: string,
+  imageHeader?: string,
+  imageDescription?: string
 ): string {
   // Include image URL in text to trigger automatic image detection
   // This is a common approach for social platforms
