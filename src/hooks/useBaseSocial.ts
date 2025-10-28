@@ -8,9 +8,9 @@ interface UseBaseSocialReturn {
   postToBaseSocial: (data: {
     header: string;
     description: string;
-    imageUrl: string;
-    imageHeader: string;
-    imageDescription: string;
+    imageUrl?: string;
+    imageHeader?: string;
+    imageDescription?: string;
   }) => Promise<void>;
   isLoading: boolean;
   isSuccess: boolean;
@@ -28,9 +28,9 @@ export function useBaseSocial(): UseBaseSocialReturn {
   const postToBaseSocial = async (data: {
     header: string;
     description: string;
-    imageUrl: string;
-    imageHeader: string;
-    imageDescription: string;
+    imageUrl?: string;
+    imageHeader?: string;
+    imageDescription?: string;
   }) => {
     try {
       setError(null);

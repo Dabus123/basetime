@@ -117,9 +117,6 @@ export function TBAPostModal({
       const postData = {
         header: formData.header,
         description: formData.description,
-        imageUrl: '',
-        imageHeader: '',
-        imageDescription: '',
       };
       
       console.log('📝 Posting to Base social feed NOW:', postData);
