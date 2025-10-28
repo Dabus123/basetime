@@ -303,12 +303,8 @@ export function CalendarView({ events, onRSVP, onShare, userRSVPs, onCreateEvent
     setShowTimelineView(true);
   };
 
-  const handleTBASubmit = (postData: TBAPostData) => {
-    // For now, we'll schedule for the selected date at 14:00 (2 PM)
-    const scheduledDateTime = new Date(selectedDate || new Date());
-    scheduledDateTime.setHours(14, 0, 0, 0);
-    
-    addScheduledPost(postData, scheduledDateTime);
+  const handleTBASubmit = async (postData: TBAPostData, scheduledFor: Date) => {
+    addScheduledPost(postData, scheduledFor);
     setIsTBAModalOpen(false);
   };
 
@@ -489,65 +485,51 @@ export function CalendarView({ events, onRSVP, onShare, userRSVPs, onCreateEvent
                   }`}
                   onClick={() => setSelectedTimeslot(hour)}
                 >
-                  {/* Regular events */}
-                  {(() => {
-                    const eventsForHour = getEventsForTimeSlot(hour);
-                    console.log('Events for hour', hour, ':', eventsForHour.length);
-                    return eventsForHour.map((event, index) => {
-                      console.log('Rendering event:', event.name, 'at hour:', hour);
-                      return (
-                        <motion.div
-                          key={event.id}
-                          whileHover={{ scale: 1.02 }}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            console.log('Event clicked:', event.name);
-                            setSelectedEvent(event);
-                          }}
-                          className="h-16 bg-blue-200 rounded-lg flex items-center px-3 mb-1 cursor-pointer hover:bg-blue-300 transition-colors"
-                        >
-                          <span className="text-sm font-medium text-gray-800 truncate">
-                            {event.name}
-                          </span>
-                        </motion.div>
-                      );
-                    });
-                  })()}
-                  
-                  {/* Scheduled posts */}
-                  {(() => {
-                    const allPosts = getPendingPosts();
-                    const filteredPosts = allPosts.filter(post => {
+                  {/* Container for multiple simultaneous events */}
+                  <div className="flex flex-col gap-1 h-full">
+                    {/* Regular events */}
+                    {getEventsForTimeSlot(hour).map((event) => (
+                      <motion.div
+                        key={event.id}
+                        whileHover={{ scale: 1.02 }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedEvent(event);
+                        }}
+                        className="h-12 bg-blue-200 rounded-lg flex items-center px-3 cursor-pointer hover:bg-blue-300 transition-colors flex-shrink-0"
+                      >
+                        <span className="text-xs font-medium text-gray-800 truncate">
+                          {event.name}
+                        </span>
+                      </motion.div>
+                    ))}
+                    
+                    {/* Scheduled posts */}
+                    {getPendingPosts().filter(post => {
                       const postDate = new Date(post.scheduledFor);
                       const targetDate = selectedDate || new Date();
                       return postDate.toDateString() === targetDate.toDateString() && 
                              postDate.getHours() === hour;
-                    });
-                    console.log('All pending posts:', allPosts.length, 'Filtered posts for hour', hour, ':', filteredPosts.length);
-                    return filteredPosts;
-                  })().map((post, index) => {
-                    console.log('Rendering scheduled post:', post.header, 'at hour:', hour); // Debug log
-                    return (
+                    }).map((post) => (
                       <motion.div
                         key={post.id}
                         whileHover={{ scale: 1.02 }}
                         onClick={(e) => {
                           e.stopPropagation();
-                          console.log('Scheduled post clicked:', post.header); // Debug log
                           setSelectedScheduledPost({
                             ...post,
                             scheduledFor: post.scheduledFor.toISOString(),
                             status: post.status === 'cancelled' ? 'failed' : post.status
                           });
                         }}
-                        className="h-16 bg-blue-200 rounded-lg flex items-center px-3 mb-1 cursor-pointer hover:bg-blue-300 transition-colors"
+                        className="h-12 bg-purple-200 rounded-lg flex items-center px-3 cursor-pointer hover:bg-purple-300 transition-colors flex-shrink-0"
                       >
-                        <span className="text-sm font-medium text-gray-800 truncate">
+                        <span className="text-xs font-medium text-gray-800 truncate">
                           📅 {post.header}
                         </span>
                       </motion.div>
-                    );
-                  })}
+                    ))}
+                  </div>
                 </div>
               </div>
             ))}
@@ -624,7 +606,7 @@ export function CalendarView({ events, onRSVP, onShare, userRSVPs, onCreateEvent
       <TBAPostModal
         isOpen={isTBAModalOpen}
         onClose={() => setIsTBAModalOpen(false)}
-        onSubmit={handleTBASubmit}
+        onSchedule={handleTBASubmit}
         selectedDate={selectedDate || new Date()}
         selectedTimeslot={selectedTimeslot}
       />

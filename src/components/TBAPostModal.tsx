@@ -18,8 +18,8 @@ interface TBAPostModalProps {
   onClose: () => void;
   selectedDate: Date;
   selectedTimeslot?: number | null;
-  onSubmit: (data: TBAPostData) => void;
-  onSchedule?: (data: TBAPostData, scheduledFor: Date) => void;
+  onSchedule: (data: TBAPostData, scheduledFor: Date) => void;
+  onSubmit?: (data: TBAPostData) => void;
 }
 
 export function TBAPostModal({ 
@@ -30,12 +30,9 @@ export function TBAPostModal({
   onSubmit, 
   onSchedule 
 }: TBAPostModalProps) {
-  const [formData, setFormData] = useState<TBAPostData>({
+  const [formData, setFormData] = useState({
     header: '',
     description: '',
-    image: '',
-    imageHeader: '',
-    imageDescription: '',
   });
   
   const [selectedTime, setSelectedTime] = useState(() => {
@@ -63,7 +60,7 @@ export function TBAPostModal({
     });
   };
 
-  const handleChange = (field: keyof TBAPostData, value: string) => {
+  const handleChange = (field: 'header' | 'description', value: string) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -77,22 +74,21 @@ export function TBAPostModal({
     setIsSubmitting(true);
     
     try {
-      const postData = {
+      const postData: TBAPostData = {
         header: formData.header,
         description: formData.description,
-      } as TBAPostData;
+      };
       
-      // If onSchedule is provided, schedule the post instead of posting immediately
+      // Combine date and time
+      const [hours, minutes] = selectedTime.split(':').map(Number);
+      const scheduledDateTime = new Date(selectedDate);
+      scheduledDateTime.setHours(hours, minutes, 0, 0);
+      
       if (onSchedule) {
-        // Combine date and time
-        const [hours, minutes] = selectedTime.split(':').map(Number);
-        const scheduledDateTime = new Date(selectedDate);
-        scheduledDateTime.setHours(hours, minutes, 0, 0);
-        
         onSchedule(postData, scheduledDateTime);
         console.log('📅 Post scheduled for:', scheduledDateTime);
-        alert(`✅ Post scheduled for ${scheduledDateTime.toLocaleString()}!\n\nYou'll be prompted to post when it's time.`);
-      } else {
+        alert(`✅ Post scheduled for ${scheduledDateTime.toLocaleString()}!`);
+      } else if (onSubmit) {
         await onSubmit(postData);
       }
       
@@ -114,21 +110,16 @@ export function TBAPostModal({
     setIsPostingNow(true);
     
     try {
-      const postData = {
+      await postToBaseSocial({
         header: formData.header,
         description: formData.description,
-      };
-      
-      console.log('📝 Posting to Base social feed NOW:', postData);
-      
-      // Post to Base social feed
-      await postToBaseSocial(postData);
+      });
       
       // Show success
       if (txHash) {
-        alert(`✅ Post published successfully!\n\nTransaction: ${txHash.substring(0, 10)}...\n\nCheck console for details.`);
+        alert(`✅ Post published successfully!\n\nTransaction: ${txHash.substring(0, 10)}...`);
       } else {
-        alert('✅ Post published successfully!\n\nCheck console for details.');
+        alert('✅ Post published successfully!');
       }
       
       // Reset form
