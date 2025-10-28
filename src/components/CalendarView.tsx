@@ -242,7 +242,8 @@ export function CalendarView({ events, onRSVP, onShare, userRSVPs, onCreateEvent
     'July', 'August', 'September', 'October', 'November', 'December'
   ];
 
-  const dayNames = ['M', 'D', 'M', 'D', 'F', 'S', 'S'];
+  // Monday-first weekday labels
+  const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
   const calendarDays = useMemo(() => {
     const year = currentDate.getFullYear();
@@ -250,15 +251,16 @@ export function CalendarView({ events, onRSVP, onShare, userRSVPs, onCreateEvent
     
     const firstDayOfMonth = new Date(year, month, 1);
     const lastDayOfMonth = new Date(year, month + 1, 0);
-    const firstDayOfWeek = firstDayOfMonth.getDay();
+    // Convert JS Sunday-first (0..6, Sun..Sat) to Monday-first (0..6, Mon..Sun)
+    const firstDayOfWeek = (firstDayOfMonth.getDay() + 6) % 7;
     const daysInMonth = lastDayOfMonth.getDate();
     
     const days: CalendarDay[] = [];
     
     // Previous month's trailing days
-    const prevMonth = new Date(year, month - 1, 0);
+    const prevMonthLastDate = new Date(year, month, 0).getDate();
     for (let i = firstDayOfWeek - 1; i >= 0; i--) {
-      const date = new Date(year, month - 1, prevMonth.getDate() - i);
+      const date = new Date(year, month - 1, prevMonthLastDate - i);
       days.push({
         date,
         isCurrentMonth: false,
