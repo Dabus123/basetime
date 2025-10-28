@@ -466,73 +466,80 @@ export function CalendarView({ events, onRSVP, onShare, userRSVPs, onCreateEvent
 
         {/* Timeline Content - Unified scrolling */}
         <div className="flex-1 overflow-y-auto">
-          <div style={{ height: '2880px' }}> {/* 24 hours * 120px */}
-            {Array.from({ length: 24 }, (_, hour) => (
-              <div key={hour} className="flex h-30 border-b border-gray-200" style={{ height: '120px' }}>
-                {/* Time column */}
-                <div className="w-16 bg-gray-50 border-r border-gray-200 flex-shrink-0 flex items-center justify-center">
-                  <span className="text-xs text-gray-500 font-medium">
-                    {String(hour).padStart(2, '0')}:00
-                  </span>
-                </div>
-                
-                {/* Events area */}
-                <div 
-                  className={`flex-1 relative px-4 py-2 cursor-pointer transition-colors ${
-                    selectedTimeslot === hour 
-                      ? 'bg-blue-50 border-2 border-blue-300 rounded-lg' 
-                      : 'hover:bg-gray-50'
-                  }`}
-                  onClick={() => setSelectedTimeslot(hour)}
-                >
-                  {/* Container for multiple simultaneous events */}
-                  <div className="flex flex-col gap-1 h-full">
-                    {/* Regular events */}
-                    {getEventsForTimeSlot(hour).map((event) => (
-                      <motion.div
-                        key={event.id}
-                        whileHover={{ scale: 1.02 }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedEvent(event);
-                        }}
-                        className="h-12 bg-blue-200 rounded-lg flex items-center px-3 cursor-pointer hover:bg-blue-300 transition-colors flex-shrink-0"
-                      >
-                        <span className="text-xs font-medium text-gray-800 truncate">
-                          {event.name}
-                        </span>
-                      </motion.div>
-                    ))}
-                    
-                    {/* Scheduled posts */}
-                    {getPendingPosts().filter(post => {
-                      const postDate = new Date(post.scheduledFor);
-                      const targetDate = selectedDate || new Date();
-                      return postDate.toDateString() === targetDate.toDateString() && 
-                             postDate.getHours() === hour;
-                    }).map((post) => (
-                      <motion.div
-                        key={post.id}
-                        whileHover={{ scale: 1.02 }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedScheduledPost({
-                            ...post,
-                            scheduledFor: post.scheduledFor.toISOString(),
-                            status: post.status === 'cancelled' ? 'failed' : post.status
-                          });
-                        }}
-                        className="h-12 bg-purple-200 rounded-lg flex items-center px-3 cursor-pointer hover:bg-purple-300 transition-colors flex-shrink-0"
-                      >
-                        <span className="text-xs font-medium text-gray-800 truncate">
-                          📅 {post.header}
-                        </span>
-                      </motion.div>
-                    ))}
+          <div style={{ height: '5760px' }}> {/* 24 hours * 2 slots * 120px */}
+            {Array.from({ length: 24 }, (_, hour) => {
+              const slots = [
+                { displayTime: `${String(hour).padStart(2, '0')}:00`, value: hour },
+                { displayTime: `${String(hour).padStart(2, '0')}:30`, value: hour + 0.5 }
+              ];
+              return slots.map((slot, slotIndex) => (
+                <div key={`${hour}-${slotIndex}`} className="flex h-30 border-b border-gray-200" style={{ height: '120px' }}>
+                  {/* Time column */}
+                  <div className="w-16 bg-gray-50 border-r border-gray-200 flex-shrink-0 flex items-center justify-center">
+                    <span className="text-xs text-gray-500 font-medium">
+                      {slot.displayTime}
+                    </span>
+                  </div>
+                  
+                  {/* Events area */}
+                  <div 
+                    className={`flex-1 relative px-4 py-2 cursor-pointer transition-colors ${
+                      selectedTimeslot === slot.value 
+                        ? 'bg-blue-50 border-2 border-blue-300 rounded-lg' 
+                        : 'hover:bg-gray-50'
+                    }`}
+                    onClick={() => setSelectedTimeslot(slot.value)}
+                  >
+                    {/* Container for multiple simultaneous events */}
+                    <div className="flex flex-col gap-1 h-full">
+                      {/* Regular events */}
+                      {getEventsForTimeSlot(slot.value).map((event) => (
+                        <motion.div
+                          key={event.id}
+                          whileHover={{ scale: 1.02 }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedEvent(event);
+                          }}
+                          className="h-12 bg-blue-200 rounded-lg flex items-center px-3 cursor-pointer hover:bg-blue-300 transition-colors flex-shrink-0"
+                        >
+                          <span className="text-xs font-medium text-gray-800 truncate">
+                            {event.name}
+                          </span>
+                        </motion.div>
+                      ))}
+                      
+                      {/* Scheduled posts */}
+                      {getPendingPosts().filter(post => {
+                        const postDate = new Date(post.scheduledFor);
+                        const targetDate = selectedDate || new Date();
+                        const postTime = postDate.getHours() + postDate.getMinutes() / 60;
+                        return postDate.toDateString() === targetDate.toDateString() && 
+                               Math.abs(postTime - slot.value) < 0.25; // Within 15 minutes
+                      }).map((post) => (
+                        <motion.div
+                          key={post.id}
+                          whileHover={{ scale: 1.02 }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedScheduledPost({
+                              ...post,
+                              scheduledFor: post.scheduledFor.toISOString(),
+                              status: post.status === 'cancelled' ? 'failed' : post.status
+                            });
+                          }}
+                          className="h-12 bg-purple-200 rounded-lg flex items-center px-3 cursor-pointer hover:bg-purple-300 transition-colors flex-shrink-0"
+                        >
+                          <span className="text-xs font-medium text-gray-800 truncate">
+                            📅 {post.header}
+                          </span>
+                        </motion.div>
+                      ))}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ));
+            })}
           </div>
         </div>
       </motion.div>

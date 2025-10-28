@@ -38,7 +38,9 @@ export function TBAPostModal({
   const [selectedTime, setSelectedTime] = useState(() => {
     // If a timeslot is selected, use that time; otherwise default to 2 PM
     if (selectedTimeslot !== null && selectedTimeslot !== undefined) {
-      return `${String(selectedTimeslot).padStart(2, '0')}:00`;
+      const hours = Math.floor(selectedTimeslot);
+      const minutes = (selectedTimeslot % 1) * 60;
+      return `${String(hours).padStart(2, '0')}:${String(Math.floor(minutes)).padStart(2, '0')}`;
     }
     return '14:00'; // Default to 2 PM
   });
