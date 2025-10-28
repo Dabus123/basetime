@@ -2,15 +2,15 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { XMarkIcon, PhotoIcon, DocumentTextIcon, SparklesIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, DocumentTextIcon, SparklesIcon } from '@heroicons/react/24/outline';
 import { useBaseSocial } from '@/hooks/useBaseSocial';
 
 export interface TBAPostData {
   header: string;
   description: string;
-  image: string;
-  imageHeader: string;
-  imageDescription: string;
+  image?: string;
+  imageHeader?: string;
+  imageDescription?: string;
 }
 
 interface TBAPostModalProps {
@@ -48,10 +48,7 @@ export function TBAPostModal({
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isPostingNow, setIsPostingNow] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string>('');
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
+  // Image upload removed for scheduling flow
   
   // Base Social hook
   const { postToBaseSocial, isLoading: isPosting, isSuccess: postSuccess, txHash } = useBaseSocial();
@@ -73,94 +70,17 @@ export function TBAPostModal({
     }));
   };
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      // Check file size (max 10MB for images)
-      const maxSize = 10 * 1024 * 1024; // 10MB
-      if (file.size > maxSize) {
-        alert(`File is too large! Maximum size is 10MB. Your file is ${(file.size / 1024 / 1024).toFixed(2)}MB`);
-        return;
-      }
-      
-      // Check file type
-      if (!file.type.startsWith('image/')) {
-        alert('Please select an image file (PNG, JPG, GIF, WebP, etc.)');
-        return;
-      }
-      
-      setSelectedFile(file);
-      // Create preview URL
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const uploadToIPFS = async (file: File): Promise<string> => {
-    setIsUploading(true);
-    setUploadProgress(0);
-    
-    try {
-      // Debug: Check if env vars are loaded
-      console.log('🔑 JWT Token loaded:', process.env.NEXT_PUBLIC_PINATA_JWT ? 'Yes' : 'No');
-      console.log('🔑 JWT Token (first 20 chars):', process.env.NEXT_PUBLIC_PINATA_JWT?.substring(0, 20) || 'Not loaded');
-      
-      // Use new Pinata v3 API
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('network', 'public'); // Use public network
-
-      const response = await fetch('https://uploads.pinata.cloud/v3/files', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_PINATA_JWT || ''}`
-        },
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Pinata API Error:', response.status, errorText);
-        throw new Error(`Failed to upload to IPFS: ${response.status} - ${errorText}`);
-      }
-
-      const result = await response.json();
-      console.log('✅ Upload successful:', result);
-      
-      // New API returns data in result.data
-      const cid = result.data?.cid || result.cid;
-      const ipfsUrl = `https://gateway.pinata.cloud/ipfs/${cid}`;
-      
-      setUploadProgress(100);
-      setIsUploading(false);
-      
-      return ipfsUrl;
-    } catch (error) {
-      console.error('IPFS upload error:', error);
-      setIsUploading(false);
-      throw error;
-    }
-  };
+  // Upload removed
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     
     try {
-      // Upload image to IPFS if a file is selected
-      let imageUrl = formData.image;
-      if (selectedFile) {
-        imageUrl = await uploadToIPFS(selectedFile);
-        console.log('✅ Image uploaded to IPFS:', imageUrl);
-      }
-      
       const postData = {
-        ...formData,
-        image: imageUrl,
-      };
+        header: formData.header,
+        description: formData.description,
+      } as TBAPostData;
       
       // If onSchedule is provided, schedule the post instead of posting immediately
       if (onSchedule) {
@@ -180,19 +100,13 @@ export function TBAPostModal({
       setFormData({
         header: '',
         description: '',
-        image: '',
-        imageHeader: '',
-        imageDescription: '',
       });
-      setSelectedFile(null);
-      setImagePreview('');
       onClose();
     } catch (error) {
       console.error('Error submitting TBA post:', error);
-      alert('Failed to upload image or submit post. Please try again.');
+      alert('Failed to submit post. Please try again.');
     } finally {
       setIsSubmitting(false);
-      setIsUploading(false);
     }
   };
 
@@ -200,19 +114,12 @@ export function TBAPostModal({
     setIsPostingNow(true);
     
     try {
-      // Upload image to IPFS if a file is selected
-      let imageUrl = formData.image;
-      if (selectedFile) {
-        imageUrl = await uploadToIPFS(selectedFile);
-        console.log('✅ Image uploaded to IPFS:', imageUrl);
-      }
-      
       const postData = {
         header: formData.header,
         description: formData.description,
-        imageUrl,
-        imageHeader: formData.imageHeader,
-        imageDescription: formData.imageDescription,
+        imageUrl: '',
+        imageHeader: '',
+        imageDescription: '',
       };
       
       console.log('📝 Posting to Base social feed NOW:', postData);
@@ -231,27 +138,20 @@ export function TBAPostModal({
       setFormData({
         header: '',
         description: '',
-        image: '',
-        imageHeader: '',
-        imageDescription: '',
       });
-      setSelectedFile(null);
-      setImagePreview('');
       onClose();
     } catch (error) {
       console.error('Error posting:', error);
       alert('Failed to post. Please try again.');
     } finally {
       setIsPostingNow(false);
-      setIsUploading(false);
     }
   };
 
   const isFormValid = () => {
     return (
       formData.header.trim() !== '' &&
-      formData.description.trim() !== '' &&
-      !isUploading
+      formData.description.trim() !== ''
     );
   };
 
@@ -355,75 +255,7 @@ export function TBAPostModal({
                   </p>
                 </div>
 
-                {/* Optional Image Section */}
-                <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
-                  <div className="flex items-center gap-2 text-sm font-medium text-gray-600 mb-3">
-                    <PhotoIcon className="w-4 h-4 text-gray-500" />
-                    Optional Image
-                    <span className="text-xs text-gray-400 ml-auto">(Currently not supported in Base social -please help base god)</span>
-                  </div>
-                  
-                  {/* Compact File Input */}
-                  <div className="relative">
-                    <input
-                      type="file"
-                      id="image"
-                      accept="image/*"
-                      onChange={handleFileSelect}
-                      className="hidden"
-                      disabled={isUploading || isSubmitting}
-                    />
-                    <label
-                      htmlFor="image"
-                      className={`flex items-center justify-center w-full h-16 border border-dashed rounded-lg cursor-pointer transition-all duration-200 ${
-                        isUploading || isSubmitting
-                          ? 'border-gray-300 bg-gray-100 cursor-not-allowed'
-                          : imagePreview
-                          ? 'border-green-300 bg-green-50 hover:bg-green-100'
-                          : 'border-gray-300 bg-white hover:bg-gray-50 hover:border-gray-400'
-                      }`}
-                    >
-                      {imagePreview ? (
-                        <div className="flex items-center gap-2 text-green-600">
-                          <ArrowUpTrayIcon className="w-4 h-4" />
-                          <span className="text-sm">Change Image</span>
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-2 text-gray-500">
-                          <ArrowUpTrayIcon className="w-4 h-4" />
-                          <span className="text-sm">Add Image (Optional)</span>
-                        </div>
-                      )}
-                    </label>
-                  </div>
-
-                  {/* Upload Progress */}
-                  {isUploading && (
-                    <div className="mt-2">
-                      <div className="flex items-center justify-between text-xs text-gray-600 mb-1">
-                        <span>Uploading...</span>
-                        <span>{uploadProgress}%</span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-1.5">
-                        <div
-                          className="bg-green-500 h-1.5 rounded-full transition-all duration-300"
-                          style={{ width: `${uploadProgress}%` }}
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Compact Image Preview */}
-                  {imagePreview && !isUploading && (
-                    <div className="mt-2 rounded-lg overflow-hidden border border-gray-200">
-                      <img
-                        src={imagePreview}
-                        alt="Preview"
-                        className="w-full h-24 object-cover"
-                      />
-                    </div>
-                  )}
-                </div>
+                {/* Image upload removed */}
 
               </div>
 
