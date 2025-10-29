@@ -122,12 +122,15 @@ export default function HomePage() {
                   <span 
                     className="text-lg font-medium truncate select-none"
                     onTouchStart={(e) => {
-                      setLongPressCountdown(7);
                       let countdown = 7;
+                      // Hide 7 and 6, show from 5 down
                       countdownTimer.current = setInterval(() => {
                         countdown--;
                         if (countdown > 0) {
-                          setLongPressCountdown(countdown);
+                          // Only show countdown if 5 or less
+                          if (countdown <= 5) {
+                            setLongPressCountdown(countdown);
+                          }
                         } else {
                           clearInterval(countdownTimer.current!);
                           setLongPressCountdown(null);
@@ -138,7 +141,7 @@ export default function HomePage() {
                       longPressTimer.current = setTimeout(() => {
                         clearInterval(countdownTimer.current!);
                         setLongPressCountdown(null);
-                      }, 10000);
+                      }, 7000);
                     }}
                     onTouchEnd={() => {
                       if (longPressTimer.current) {
