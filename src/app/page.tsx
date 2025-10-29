@@ -134,6 +134,7 @@ export default function HomePage() {
                         } else {
                           clearInterval(countdownTimer.current!);
                           setLongPressCountdown(null);
+                          console.log('🎯 Dev menu activated!');
                           setShowDevMenu(true);
                         }
                       }, 1000);
