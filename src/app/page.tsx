@@ -120,10 +120,12 @@ export default function HomePage() {
                   <span 
                     className="text-lg font-medium truncate select-none"
                     onTouchStart={(e) => {
+                      console.log('👆 Touch started on BaseTime');
                       let countdown = 7;
                       // Hide 7 and 6, show from 5 down
                       countdownTimer.current = setInterval(() => {
                         countdown--;
+                        console.log(`⏱️ Countdown: ${countdown}`);
                         if (countdown > 0) {
                           // Only show countdown if 5 or less
                           if (countdown <= 5) {
@@ -138,6 +140,7 @@ export default function HomePage() {
                       }, 1000);
                       
                       longPressTimer.current = setTimeout(() => {
+                        console.log('⏰ Long press timeout');
                         clearInterval(countdownTimer.current!);
                         setLongPressCountdown(null);
                       }, 7000);
