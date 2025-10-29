@@ -356,7 +356,6 @@ export function CalendarView({ events, onRSVP, onShare, userRSVPs, onCreateEvent
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        onClick={handleCalendarTap}
       >
         <motion.div 
           className="px-4 py-3"
@@ -376,7 +375,8 @@ export function CalendarView({ events, onRSVP, onShare, userRSVPs, onCreateEvent
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.2 }}
-              className="text-lg font-semibold text-gray-900"
+              className="text-lg font-semibold text-gray-900 cursor-pointer"
+              onClick={handleCalendarTap}
             >
               {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
             </motion.h2>
