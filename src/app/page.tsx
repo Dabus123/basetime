@@ -117,8 +117,9 @@ export default function HomePage() {
                       <path fillRule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
                     </svg>
                   </motion.button>
-                  <span 
-                    className="text-lg font-medium truncate select-none"
+                  <button 
+                    type="button"
+                    className="text-lg font-medium truncate select-none bg-transparent border-none p-0 cursor-pointer"
                     onTouchStart={(e) => {
                       console.log('👆 Touch started on BaseTime');
                       let countdown = 7;
@@ -154,9 +155,53 @@ export default function HomePage() {
                       }
                       setLongPressCountdown(null);
                     }}
+                    onMouseDown={(e) => {
+                      console.log('🖱️ Mouse started on BaseTime');
+                      let countdown = 7;
+                      // Hide 7 and 6, show from 5 down
+                      countdownTimer.current = setInterval(() => {
+                        countdown--;
+                        console.log(`⏱️ Countdown: ${countdown}`);
+                        if (countdown > 0) {
+                          // Only show countdown if 5 or less
+                          if (countdown <= 5) {
+                            setLongPressCountdown(countdown);
+                          }
+                        } else {
+                          clearInterval(countdownTimer.current!);
+                          setLongPressCountdown(null);
+                          console.log('🎯 Dev menu activated!');
+                          setShowDevMenu(true);
+                        }
+                      }, 1000);
+                      
+                      longPressTimer.current = setTimeout(() => {
+                        console.log('⏰ Long press timeout');
+                        clearInterval(countdownTimer.current!);
+                        setLongPressCountdown(null);
+                      }, 7000);
+                    }}
+                    onMouseUp={() => {
+                      if (longPressTimer.current) {
+                        clearTimeout(longPressTimer.current);
+                      }
+                      if (countdownTimer.current) {
+                        clearInterval(countdownTimer.current);
+                      }
+                      setLongPressCountdown(null);
+                    }}
+                    onMouseLeave={() => {
+                      if (longPressTimer.current) {
+                        clearTimeout(longPressTimer.current);
+                      }
+                      if (countdownTimer.current) {
+                        clearInterval(countdownTimer.current);
+                      }
+                      setLongPressCountdown(null);
+                    }}
                   >
                     BaseTime
-                  </span>
+                  </button>
                 </div>
               </div>
             </motion.header>
