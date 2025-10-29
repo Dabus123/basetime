@@ -8,6 +8,7 @@ import { EventModal } from './EventModal';
 import { DayActionModal } from './DayActionModal';
 import { TBAPostModal, TBAPostData } from './TBAPostModal';
 import { ScheduledPostModal } from './ScheduledPostModal';
+import { DevMenu } from './DevMenu';
 import { useScheduledPosts } from '@/hooks/useScheduledPosts';
 import { useBaseSocial } from '@/hooks/useBaseSocial';
 
@@ -55,6 +56,9 @@ export function CalendarView({ events, onRSVP, onShare, userRSVPs, onCreateEvent
   const [selectedTimeslot, setSelectedTimeslot] = useState<number | null>(null);
   const [longPressTimer, setLongPressTimer] = useState<NodeJS.Timeout | null>(null);
   const [isLongPressing, setIsLongPressing] = useState(false);
+  const [isDevMenuOpen, setIsDevMenuOpen] = useState(false);
+  const [tapCount, setTapCount] = useState(0);
+  const [tapTimer, setTapTimer] = useState<NodeJS.Timeout | null>(null);
   
   // Scheduling hooks
   const { addScheduledPost, getDuePosts, updatePostStatus, getPendingPosts } = useScheduledPosts();
@@ -237,6 +241,30 @@ export function CalendarView({ events, onRSVP, onShare, userRSVPs, onCreateEvent
     setIsLongPressing(false);
   };
 
+  // Dev menu: 10 taps to open
+  const handleCalendarTap = () => {
+    setTapCount(prev => {
+      const newCount = prev + 1;
+      
+      // Clear existing timer
+      if (tapTimer) {
+        clearTimeout(tapTimer);
+      }
+      
+      // Reset if 10 taps reached
+      if (newCount >= 10) {
+        setIsDevMenuOpen(true);
+        return 0;
+      }
+      
+      // Start new timer to reset count after 1 second
+      const timer = setTimeout(() => setTapCount(0), 1000);
+      setTapTimer(timer);
+      
+      return newCount;
+    });
+  };
+
   const monthNames = [
     'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'
@@ -328,6 +356,7 @@ export function CalendarView({ events, onRSVP, onShare, userRSVPs, onCreateEvent
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
+        onClick={handleCalendarTap}
       >
         <motion.div 
           className="px-4 py-3"
@@ -674,6 +703,14 @@ export function CalendarView({ events, onRSVP, onShare, userRSVPs, onCreateEvent
           console.log('Delete scheduled post:', postId);
         }}
       />
+
+      {/* Dev Menu - Only in development */}
+      {process.env.NODE_ENV === 'development' && (
+        <DevMenu
+          isOpen={isDevMenuOpen}
+          onClose={() => setIsDevMenuOpen(false)}
+        />
+      )}
     </div>
   );
 }
