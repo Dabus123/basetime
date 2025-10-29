@@ -26,8 +26,6 @@ export default function HomePage() {
   const [longPressCountdown, setLongPressCountdown] = useState<number | null>(null);
   const longPressTimer = React.useRef<NodeJS.Timeout | null>(null);
   const countdownTimer = React.useRef<NodeJS.Timeout | null>(null);
-  const [devPasswordPrompt, setDevPasswordPrompt] = useState(false);
-  const [devPassword, setDevPassword] = useState('');
 
   const handleCreateEvent = async (eventData: CreateEventData) => {
     setIsCreating(true);
@@ -366,7 +364,14 @@ export default function HomePage() {
                       <motion.button
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
-                        onClick={() => setDevPasswordPrompt(true)}
+                        onClick={() => {
+                          const password = prompt('Enter password:');
+                          if (password === 'yeti') {
+                            window.location.href = '/dev';
+                          } else if (password) {
+                            alert('❌ Incorrect password');
+                          }
+                        }}
                         className="block w-full text-left p-3 bg-purple-50 text-purple-900 rounded-lg hover:bg-purple-100 transition-colors"
                       >
                         <div className="flex items-center gap-2">
@@ -399,79 +404,6 @@ export default function HomePage() {
         selectedEndDate={selectedEndDate}
       />
 
-      {/* Dev Password Prompt */}
-      <AnimatePresence>
-        {devPasswordPrompt && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black bg-opacity-50 z-40"
-              onClick={() => {
-                setDevPasswordPrompt(false);
-                setDevPassword('');
-              }}
-            />
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="fixed inset-0 flex items-center justify-center p-4 z-50"
-            >
-              <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-4">Enter Dev Password</h2>
-                <input
-                  type="password"
-                  value={devPassword}
-                  onChange={(e) => setDevPassword(e.target.value)}
-                  placeholder="Password"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none mb-4"
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      if (devPassword === 'yeti') {
-                        window.location.href = '/dev';
-                      } else {
-                        alert('❌ Incorrect password');
-                        setDevPassword('');
-                      }
-                    }
-                  }}
-                  autoFocus
-                />
-                <div className="flex gap-3">
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => {
-                      setDevPasswordPrompt(false);
-                      setDevPassword('');
-                    }}
-                    className="flex-1 px-4 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors font-medium"
-                  >
-                    Cancel
-                  </motion.button>
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => {
-                      if (devPassword === 'yeti') {
-                        window.location.href = '/dev';
-                      } else {
-                        alert('❌ Incorrect password');
-                        setDevPassword('');
-                      }
-                    }}
-                    className="flex-1 px-4 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-colors font-medium"
-                  >
-                    Enter
-                  </motion.button>
-                </div>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
     </motion.div>
   );
 }
