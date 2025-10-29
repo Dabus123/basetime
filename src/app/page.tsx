@@ -360,6 +360,7 @@ export default function HomePage() {
                       animate={{ opacity: 1, y: 0 }}
                       className="mt-4 pt-4 border-t border-gray-200"
                     >
+                      <div className="text-xs text-green-500 mb-2">🔓 Dev menu active</div>
                       <h3 className="text-xs font-semibold text-gray-500 mb-2">DEVELOPER</h3>
                       <motion.button
                         whileHover={{ scale: 1.02 }}
