@@ -82,7 +82,7 @@ export function useBaseSocial(): UseBaseSocialReturn {
           result = await sdk.actions.composeCast({
             text: `${data.header}\n\n${data.description}`,
             embeds: [imageUrl],
-            close: false,
+            close: true,
           });
           console.log('✅ Embeds with IPFS URL succeeded!');
         } catch (embedError) {
@@ -93,7 +93,7 @@ export function useBaseSocial(): UseBaseSocialReturn {
             result = await sdk.actions.composeCast({
               text: `${data.header}\n\n${data.description}`,
               embeds: [imageUrl],
-              close: false,
+              close: true,
             });
             console.log('✅ Embed object format succeeded!');
           } catch (embedObjectError) {
@@ -104,7 +104,7 @@ export function useBaseSocial(): UseBaseSocialReturn {
               console.log('📝 Trying with URL in text for auto-detection...');
               result = await sdk.actions.composeCast({
                 text: `${data.header}\n\n${data.description}\n\n${imageUrl}`,
-                close: false,
+                close: true,
               });
               console.log('✅ URL in text succeeded!');
             } catch (textError) {
@@ -117,7 +117,7 @@ export function useBaseSocial(): UseBaseSocialReturn {
                 const publicGatewayUrl = imageUrl.replace('gateway.pinata.cloud', 'ipfs.io');
                 result = await sdk.actions.composeCast({
                   text: `${data.header}\n\n${data.description}\n\n${publicGatewayUrl}`,
-                  close: false,
+                  close: true,
                 });
                 console.log('✅ Different gateway succeeded!');
               } catch (gatewayError) {
@@ -127,7 +127,7 @@ export function useBaseSocial(): UseBaseSocialReturn {
                 console.log('📝 Final fallback: text only');
                 result = await sdk.actions.composeCast({
                   text: `${data.header}\n\n${data.description}`,
-                  close: false,
+                  close: true,
                 });
               }
             }
@@ -138,7 +138,7 @@ export function useBaseSocial(): UseBaseSocialReturn {
         console.log('📝 Using text-only posting method...');
         result = await sdk.actions.composeCast({
           text: postText,
-          close: false,
+          close: true,
         });
       }
       
