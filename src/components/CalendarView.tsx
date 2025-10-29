@@ -516,7 +516,6 @@ export function CalendarView({ events, onRSVP, onShare, userRSVPs, onCreateEvent
                     }`}
                     onClick={() => setSelectedTimeslot(hour)}
                   >
-                    <div className="text-xs text-gray-400 mb-1">:00</div>
                     <div className="flex flex-col gap-1 h-full">
                       {getEventsForTimeSlot(hour).map((event) => (
                         <motion.div
@@ -570,7 +569,6 @@ export function CalendarView({ events, onRSVP, onShare, userRSVPs, onCreateEvent
                     }`}
                     onClick={() => setSelectedTimeslot(hour + 0.5)}
                   >
-                    <div className="text-xs text-gray-400 mb-1">:30</div>
                     <div className="flex flex-col gap-1 h-full">
                       {getEventsForTimeSlot(hour + 0.5).map((event) => (
                         <motion.div
