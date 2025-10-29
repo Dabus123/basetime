@@ -23,6 +23,9 @@ export default function HomePage() {
   const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
   const [showDevMenu, setShowDevMenu] = useState(false);
+  const [longPressCountdown, setLongPressCountdown] = useState<number | null>(null);
+  const longPressTimer = React.useRef<NodeJS.Timeout | null>(null);
+  const countdownTimer = React.useRef<NodeJS.Timeout | null>(null);
 
   const handleCreateEvent = async (eventData: CreateEventData) => {
     setIsCreating(true);
@@ -114,10 +117,57 @@ export default function HomePage() {
                       <path fillRule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
                     </svg>
                   </motion.button>
-                  <span className="text-lg font-medium truncate">BaseTime</span>
+                  <span 
+                    className="text-lg font-medium truncate select-none"
+                    onTouchStart={(e) => {
+                      setLongPressCountdown(7);
+                      let countdown = 7;
+                      countdownTimer.current = setInterval(() => {
+                        countdown--;
+                        if (countdown > 0) {
+                          setLongPressCountdown(countdown);
+                        } else {
+                          clearInterval(countdownTimer.current!);
+                          setLongPressCountdown(null);
+                          setShowDevMenu(true);
+                        }
+                      }, 1000);
+                      
+                      longPressTimer.current = setTimeout(() => {
+                        clearInterval(countdownTimer.current!);
+                        setLongPressCountdown(null);
+                      }, 10000);
+                    }}
+                    onTouchEnd={() => {
+                      if (longPressTimer.current) {
+                        clearTimeout(longPressTimer.current);
+                      }
+                      if (countdownTimer.current) {
+                        clearInterval(countdownTimer.current);
+                      }
+                      setLongPressCountdown(null);
+                    }}
+                  >
+                    BaseTime
+                  </span>
                 </div>
               </div>
             </motion.header>
+
+            {/* Long Press Countdown Overlay */}
+            {longPressCountdown !== null && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                className="fixed top-20 right-4 bg-purple-600 text-white px-4 py-2 rounded-xl shadow-lg z-50"
+              >
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
+                  <span className="font-bold">{longPressCountdown}</span>
+                </div>
+              </motion.div>
+            )}
 
             {/* Main Content */}
             <motion.main
@@ -136,7 +186,6 @@ export default function HomePage() {
                       onShare={handleShare}
                       userRSVPs={userRSVPs}
                       onCreateEvent={handleDateSelect}
-                      onDevMenuTrigger={() => setShowDevMenu(!showDevMenu)}
                     />
                     
                     {/* Upcoming Events Section */}

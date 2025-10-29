@@ -8,7 +8,6 @@ import { EventModal } from './EventModal';
 import { DayActionModal } from './DayActionModal';
 import { TBAPostModal, TBAPostData } from './TBAPostModal';
 import { ScheduledPostModal } from './ScheduledPostModal';
-import { DevMenu } from './DevMenu';
 import { useScheduledPosts } from '@/hooks/useScheduledPosts';
 import { useBaseSocial } from '@/hooks/useBaseSocial';
 
@@ -18,7 +17,6 @@ interface CalendarViewProps {
   onShare: (event: Event) => void;
   userRSVPs: Set<number>;
   onCreateEvent?: (startDate: Date, endDate?: Date) => void;
-  onDevMenuTrigger?: () => void;
 }
 
 interface CalendarDay {
@@ -28,7 +26,7 @@ interface CalendarDay {
   events: Event[];
 }
 
-export function CalendarView({ events, onRSVP, onShare, userRSVPs, onCreateEvent, onDevMenuTrigger }: CalendarViewProps) {
+export function CalendarView({ events, onRSVP, onShare, userRSVPs, onCreateEvent }: CalendarViewProps) {
   console.log('CalendarView received events:', events.length); // Debug log
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
@@ -57,9 +55,6 @@ export function CalendarView({ events, onRSVP, onShare, userRSVPs, onCreateEvent
   const [selectedTimeslot, setSelectedTimeslot] = useState<number | null>(null);
   const [longPressTimer, setLongPressTimer] = useState<NodeJS.Timeout | null>(null);
   const [isLongPressing, setIsLongPressing] = useState(false);
-  const [isDevMenuOpen, setIsDevMenuOpen] = useState(false);
-  const [tapCount, setTapCount] = useState(0);
-  const [tapTimer, setTapTimer] = useState<NodeJS.Timeout | null>(null);
   
   // Scheduling hooks
   const { addScheduledPost, getDuePosts, updatePostStatus, getPendingPosts } = useScheduledPosts();
@@ -242,32 +237,6 @@ export function CalendarView({ events, onRSVP, onShare, userRSVPs, onCreateEvent
     setIsLongPressing(false);
   };
 
-  // Dev menu: 10 taps to open
-  const handleCalendarTap = () => {
-    setTapCount(prev => {
-      const newCount = prev + 1;
-      
-      // Clear existing timer
-      if (tapTimer) {
-        clearTimeout(tapTimer);
-      }
-      
-      // Reset if 10 taps reached
-      if (newCount >= 10) {
-        if (onDevMenuTrigger) {
-          onDevMenuTrigger();
-        }
-        return 0;
-      }
-      
-      // Start new timer to reset count after 1 second
-      const timer = setTimeout(() => setTapCount(0), 1000);
-      setTapTimer(timer);
-      
-      return newCount;
-    });
-  };
-
   const monthNames = [
     'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'
@@ -378,8 +347,7 @@ export function CalendarView({ events, onRSVP, onShare, userRSVPs, onCreateEvent
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.2 }}
-              className="text-lg font-semibold text-gray-900 cursor-pointer"
-              onClick={handleCalendarTap}
+              className="text-lg font-semibold text-gray-900"
             >
               {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
             </motion.h2>
@@ -705,13 +673,6 @@ export function CalendarView({ events, onRSVP, onShare, userRSVPs, onCreateEvent
         }}
       />
 
-      {/* Dev Menu - Only in development */}
-      {process.env.NODE_ENV === 'development' && (
-        <DevMenu
-          isOpen={isDevMenuOpen}
-          onClose={() => setIsDevMenuOpen(false)}
-        />
-      )}
     </div>
   );
 }
