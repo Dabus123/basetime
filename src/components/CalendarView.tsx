@@ -18,6 +18,7 @@ interface CalendarViewProps {
   onShare: (event: Event) => void;
   userRSVPs: Set<number>;
   onCreateEvent?: (startDate: Date, endDate?: Date) => void;
+  onDevMenuTrigger?: () => void;
 }
 
 interface CalendarDay {
@@ -27,7 +28,7 @@ interface CalendarDay {
   events: Event[];
 }
 
-export function CalendarView({ events, onRSVP, onShare, userRSVPs, onCreateEvent }: CalendarViewProps) {
+export function CalendarView({ events, onRSVP, onShare, userRSVPs, onCreateEvent, onDevMenuTrigger }: CalendarViewProps) {
   console.log('CalendarView received events:', events.length); // Debug log
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
@@ -253,7 +254,9 @@ export function CalendarView({ events, onRSVP, onShare, userRSVPs, onCreateEvent
       
       // Reset if 10 taps reached
       if (newCount >= 10) {
-        setIsDevMenuOpen(true);
+        if (onDevMenuTrigger) {
+          onDevMenuTrigger();
+        }
         return 0;
       }
       
