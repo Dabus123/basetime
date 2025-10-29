@@ -23,9 +23,8 @@ export default function HomePage() {
   const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
   const [showDevMenu, setShowDevMenu] = useState(false);
-  const [longPressCountdown, setLongPressCountdown] = useState<number | null>(null);
-  const longPressTimer = React.useRef<NodeJS.Timeout | null>(null);
-  const countdownTimer = React.useRef<NodeJS.Timeout | null>(null);
+  const [tapCount, setTapCount] = useState(0);
+  const tapTimerRef = React.useRef<NodeJS.Timeout | null>(null);
 
   const handleCreateEvent = async (eventData: CreateEventData) => {
     setIsCreating(true);
@@ -104,6 +103,29 @@ export default function HomePage() {
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.1, duration: 0.5 }}
               className="bg-blue-600 text-white px-4 py-3 flex-shrink-0"
+              onClick={() => {
+                const newTapCount = tapCount + 1;
+                setTapCount(newTapCount);
+                
+                // Clear existing timer
+                if (tapTimerRef.current) {
+                  clearTimeout(tapTimerRef.current);
+                }
+                
+                // If 10 taps reached
+                if (newTapCount >= 10) {
+                  console.log('✅ 10 taps reached - activating dev menu!');
+                  setShowDevMenu(true);
+                  setTapCount(0);
+                  return;
+                }
+                
+                // Start timer to reset count after 1 second
+                const timer = setTimeout(() => {
+                  setTapCount(0);
+                }, 1000);
+                tapTimerRef.current = timer;
+              }}
             >
               <div className="flex items-center justify-between max-w-full relative">
                 <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -121,69 +143,9 @@ export default function HomePage() {
                     BaseTime
                   </span>
                 </div>
-                {/* Long-press area for dev menu */}
-                <div 
-                  className="absolute inset-0 left-[60px] cursor-pointer"
-                  onMouseDown={(e) => {
-                    console.log('🖱️ Long press area clicked');
-                    let countdown = 7;
-                    countdownTimer.current = setInterval(() => {
-                      countdown--;
-                      console.log(`⏱️ Countdown: ${countdown}`);
-                      if (countdown > 0) {
-                        if (countdown <= 5) {
-                          setLongPressCountdown(countdown);
-                        }
-                      } else {
-                        clearInterval(countdownTimer.current!);
-                        setLongPressCountdown(null);
-                        console.log('🎯 Dev menu activated!');
-                        setShowDevMenu(true);
-                      }
-                    }, 1000);
-                    
-                    longPressTimer.current = setTimeout(() => {
-                      clearInterval(countdownTimer.current!);
-                      setLongPressCountdown(null);
-                    }, 7000);
-                  }}
-                  onMouseUp={() => {
-                    if (longPressTimer.current) {
-                      clearTimeout(longPressTimer.current);
-                    }
-                    if (countdownTimer.current) {
-                      clearInterval(countdownTimer.current);
-                    }
-                    setLongPressCountdown(null);
-                  }}
-                  onMouseLeave={() => {
-                    if (longPressTimer.current) {
-                      clearTimeout(longPressTimer.current);
-                    }
-                    if (countdownTimer.current) {
-                      clearInterval(countdownTimer.current);
-                    }
-                    setLongPressCountdown(null);
-                  }}
-                />
               </div>
             </motion.header>
 
-            {/* Long Press Countdown Overlay */}
-            {longPressCountdown !== null && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                className="fixed top-20 right-4 bg-purple-600 text-white px-4 py-2 rounded-xl shadow-lg z-50"
-              >
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
-                  <span className="font-bold">{longPressCountdown}</span>
-                </div>
-              </motion.div>
-            )}
-            
             {/* Main Content */}
             <motion.main
               initial={{ y: 50, opacity: 0 }}
