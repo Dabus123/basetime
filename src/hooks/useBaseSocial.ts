@@ -64,7 +64,7 @@ export function useBaseSocial(): UseBaseSocialReturn {
       
       // Use the SDK to compose and post the cast
       // Try multiple approaches for image embedding
-      let result;
+      let result: unknown;
       
       // For Mini Apps, we might need to post text only and let the Mini App's meta tags handle image display
       // The image will be shown when the Mini App is shared, not in the post itself
@@ -145,8 +145,8 @@ export function useBaseSocial(): UseBaseSocialReturn {
       console.log('✅ Post result:', result);
       
       // Extract transaction hash if available
-      if (result && typeof result === 'object' && 'hash' in result) {
-        setTxHash(result.hash as string);
+      if (result && typeof result === 'object' && result !== null && 'hash' in result) {
+        setTxHash((result as { hash: string }).hash);
       }
       
       setIsSuccess(true);
