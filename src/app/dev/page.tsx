@@ -175,7 +175,7 @@ export default function DevPage() {
               </div>
             </div>
             <p className="text-sm text-gray-700 mb-4">
-              Uses Zora's approach to Base social interactions and posting.
+              Uses Zora&apos;s approach to Base social interactions and posting.
             </p>
             <motion.button
               whileHover={{ scale: 1.02 }}
